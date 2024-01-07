@@ -46,7 +46,6 @@ Ficaram curiosos ou curiosas para saber como isso foi implementado? Vem comigo n
 
 @@02
 Preparando o ambiente: instalação do Expo e download do projeto
-PRÓXIMA ATIVIDADE
 
 Olá!
 Antes de iniciar nossa jornada de aprendizados, é preciso que você leia com atenção algumas instruções e baixe os materiais necessários para acompanhar bem o curso.
@@ -199,7 +198,6 @@ Vamos implementar isso no nosso projeto!
 
 @@05
 Sobre Context API
-PRÓXIMA ATIVIDADE
 
 Muitas aplicações tomam uma proporção tão grande que acessar dados de uma tela em outra tela, ou até mesmo um componente, pode se tornar uma tarefa complexa e trabalhosa.
 Por isso, nessa aula vimos que o Context API nos ajuda em situações como essa, nos auxiliando a facilitar essa tarefa. Considerando o conteúdo abordado, marque a alternativa verdadeira:
@@ -218,7 +216,6 @@ O Context API não tem muita aplicação no dia a dia, portanto, seu uso não é
 
 @@06
 Para saber mais: Context API vs Redux
-PRÓXIMA ATIVIDADE
 
 O Context API é uma forma de organizar a construção de um projeto, lidando melhor com aplicações maiores. Contudo, como já mencionamos, ele não é o único que pode nos auxiliar nisso, pois existem outras soluções como o Redux.
 Se você quiser saber mais sobre o Redux e suas diferenças em relação ao Context API, dá uma conferida nesse nosso artigo!
@@ -437,7 +434,6 @@ Como observamos, importamos o GlobalContext e deixamos variáveis e funções gl
 
 @@08
 Faça como eu fiz: aplicando o Context API
-PRÓXIMA ATIVIDADE
 
 Nessa aula, fizemos a implementação do Context API em nosso projeto base. Vamos colocar isso em prática?
 Nossa aplicação, por enquanto, possui poucas telas e passar informações - via props - de uma tela para a outra é uma tarefa relativamente simples!
@@ -470,7 +466,6 @@ https://github.com/alura-cursos/react-native-context-api/tree/a0fee1c241e3f483d8
 
 @@09
 O que aprendemos?
-PRÓXIMA ATIVIDADE
 
 Nesta aula, aprendemos sobre:
 O que é o Context API e sua função: vimos que ele guarda, centraliza e disponibiliza estados (variáveis e funções) globalmente na aplicação - o que é de grande importância quando lidamos com uma aplicação muito grande, com várias telas e componentes;
@@ -480,3 +475,355 @@ Você finalizou a aula 1 e se ficou com alguma dúvida ou tem alguma curiosidade
 
 Nos vemos na próxima aula!
 
+#### 07/01/2023
+
+@02-Configuração e alteração de tema
+
+@@01
+Projeto da aula anterior
+
+Caso queira começar o curso a partir desta aula, você pode fazer o download do projeto, clicando aqui.
+
+https://github.com/alura-cursos/react-native-context-api/tree/a0fee1c241e3f483d80bba1a070c171c2392240e
+
+@@02
+Configurando os temas do Context API
+
+Acabamos de aplicar o Context no nosso projeto e vimos como acessar os estados em telas diferentes. Isso porque conseguimos deixar variáveis e funções globalmente disponíveis para acessá-las e as manipular em qualquer tela.
+Porém, o Context pode ser aplicado nos mais diversos contextos, um deles é alterando o tema da nossa aplicação, que é o que faremos daqui a pouco. O tema da aplicação envolve mudar a cor, o layout e assim por diante. No nosso caso, mudaremos a cor do fundo, das letras, do input e do botão. Começaremos pelo setup de configuração do Context do tema.
+
+Não vamos mais usar o "GlobalContext". Usamos ele apenas para exemplificar como funciona o useContext() e o Context API no nosso projeto. Criaremos um novo Context para o tema, clicando com o botão direito em "contexts", selecionando "Novo Arquivo". Nomearemos o arquivo como "TemaContext.js".
+
+Todos os nossos Context API terão a mesma estrutura que criamos no "GlobalContext", então vamos copiá-la e colar no "TemaContext". A diferença é que mudaremos os nomes das variáveis para deixar mais intuitivo o que estamos tratando.
+
+Ao invés de const GlobalContext, vamos mudar para const TemaContext. Com isso os demais comandos que eram GlobalContext também mudaram. Além disso, vamos alterar de InfoProvider para TemaProvider, onde proveremos os temas.
+
+Não teremos as variáveis valor e nome, então podemos apagá-las. Contudo, teremos uma variável pela qual poderemos manipular as cores da nossa aplicação, mudando do tema escuro para o claro. Criaremos esta variável com o comando const [temaAtual, setTemaAtual] e usaremos o useState() nela.
+
+Já iremos inicializá-la com uma string, então vamos escrever useState('escuro'), ou seja, quando a aplicação iniciar, o tema atual será no modo escuro. Porém poderemos alterar essa string para ('claro') e nossa aplicação ficará com outras cores, referentes ao tema claro.
+
+Por fim, passaremos a variável e a função no nosso .Provider, para conseguirmos acessá-las, por exemplo, na tela de configuração.
+
+import { createContext, useState } from 'react'
+
+export const TemaContext = createContext({})
+
+export function TemaProvider( {children} ) {
+    const [temaAtual, setTemaAtual] = useState('escuro')
+
+    return (
+        <TemaContext.Provider>
+            temaAtual,
+            setTemaAtual
+        </TemaContext.Provider>
+    )
+}COPIAR CÓDIGO
+Lembrando que temos que colocar o TemaContext por volta da nossa aplicação. Portanto, acessaremos o "App.js", importaremos o TemaProvider e, ao invés de InfoProvider, usaremos TemaProvider. Até podemos tirar o import do GlobalProvider, porque não vamos usá-lo.
+
+import Rotas from "./src/rotas";
+import { TemaProvider } from "./src/contexts/TemaContext";
+
+export default function App() {
+    return (
+        <TemaProvider>
+            <Rotas />
+        </TemaProvider>
+    )
+}COPIAR CÓDIGO
+Ao fazermos essa alteração, vemos que a tela de Login do nosso aplicativo deixa de exibir os textos que passamos. Isso porque o Context API não está mais em volta da nossa aplicação, provendo aquelas variáveis do GlobalContext.
+
+Então voltaremos ao "index.js" do "Login" para removermos as informações do GlobalContext. Sendo assim, apagaremos o = {valor} do Text, deixando apenas Login. Além disso, removeremos o código de importação do useContext, ou seja, a linha const {} = useContext(GlobalContext). Também apagaremos a importação do GlobalContext e, no TextInput, voltaremos o código para value={email} e onChangeText={setEmail}.
+
+//Trecho de código suprimido
+
+import { useContext } from "react";
+
+export default function Login({ navigation }) {
+    const [email, setEmail] = useState("");
+    const [senha, setSenha] = useState("");
+
+    return (
+        <View style={estilos.container}>
+            <StatusBar />
+            <Text style={estilo.titulo}>Login</Text>
+
+//Trecho de código suprimido
+
+                <TextInput
+                    style={estilo.input}
+                    placeholder="Email"
+                    placeholderTextColor="#999"
+                    autoCapitalizer="none"
+                    value={email}
+                    onChangeText={setEmail}
+                />
+
+//Trecho de código suprimidoCOPIAR CÓDIGO
+Por fim, acessaremos o "index.js" da "Principal", onde também importamos o GlobalContext. Apagaremos a const {} = useContext(GlobalContext) e, Text, voltaremos para Olá, NOME, removendo o {nome}. Por fim, apagaremos a importação do GlobalContext.
+
+//Trecho de código suprimido
+
+import { useContext } from 'react';
+
+export default function Principal({ navigation }) {
+    const [ultimosVistos] = []
+
+    return (
+        <View style={estilos.container}>
+            <StatusBar />
+            <Text style={estilo.tituloArea}>
+            <Text style={estilo.titulo}Olá, NOME</Text>
+
+//Trecho de código suprimidoCOPIAR CÓDIGO
+Agora, para alterarmos o tema da aplicação, usaremos a tela de Configuração. Para isso, acessaremos "src > telas > Configuracao > index.js". Abrindo esse código, importaremos o Context de tema para conseguirmos alterar a variável, ou seja, import { useState, useContext } from 'react';.
+
+Em seguida, criaremos uma const {} = useContext(), igual fizemos ao usar o GlobalContext. Passaremos o (TemaContext) como parâmetro, gerando a importação dele.
+
+//Trecho de código suprimido
+
+import { useState, useContext } from 'react';
+import { TemaContext } from '../../contexts/TemaContext';
+
+export default function Configuracao({ navigation })
+    const [estado, setEstado] = useState(true);
+
+    const { temaAtual, setTemaAtual } = useContext(TemaContext)COPIAR CÓDIGO
+O Switch do nosso código altera o estado, seja de true para false ou false para true. Então temos variável estado, que tem o estado true. Se clicarmos no switch, na tela de configuração do aplicativo, o estado passa a valer false.
+
+Porém não usaremos o switch agora, e sim o temaAtual para alterar de escuro para claro. Para isso, faremos um if dentro do value={}. Se o tema atual for 'escuro', colocaremos true, senão, será false.
+
+//Trecho de código suprimido
+<Switch
+    onValueChange={() => setEstado(!estado)}
+    value={temaAtual === 'escuro' ? true : false}
+/>COPIAR CÓDIGO
+Essa estrutura pode ser novidade, mas é um if ternário, e funciona da mesma forma de um if/else. Se fizéssemos do um if/else da forma mais comum, teríamos if(temaAtual === 'escuro'){}, e nas chaves teria uma ação, senão, else{}, com uma ação diferente nessas chaves.
+
+No if ternário é a mesma coisa. Então temaAtual === 'escuro' ? significa "se o tema atual for 'escuro'", com a <?> indicando a pergunta, ou seja, o if. Nesse caso, será true. O else, que é o "senão", é representado por <:>. Portanto, se não for 'escuro', é igual a false. Dessa forma, configuramos o value para true ou false.
+
+Agora teremos que alterar o estado de 'escuro' para 'claro' no onValueChange, ou seja, quando mudar a chave. Para fazermos isso, usaremos outro if ternário. Vamos até quebrar a linha para melhorar a visualização.
+
+//Trecho de código suprimido
+<Switch
+    onValueChange={() =>
+        temaAtual === 'escuro' ?
+        setTemaAtual('claro') :
+        setTemaAtual('escuro')
+    }
+    value={temaAtual === 'escuro' ? true : false}
+/>COPIAR CÓDIGO
+Portanto, quando a chave mudar, se a variável temaAtual for escuro, vamos alterar para 'claro', caso contrário, o tema estará claro e mudaremos para 'escuro'. Salvamos e, para testarmos se está funcionando, ao invés de escrevermos Tema: {'escuro'}, de forma estática, colocaremos a variável temaAtual, ou seja, Text style={estilo.subtitulo}>Tema: {temaAtual}</Text>.
+
+Com a tela "Configurações" aberta na nossa aplicação, acima do switch está escrito "Tema: escuro". Quando clicamos no switch, o texto muda para "Tema: claro". Ao clicarmos novamente, volta para "Tema: escuro". Nosso tema não está sendo alterado de fato, estamos apenas configurando o ambiente do nosso Context de tema. A parte de alterar o tema ficará para outro vídeo.
+
+Para finalizar, faremos mais uma configuração. Acessando o arquivo "estilosGlobais.js", percebemos que temos o objeto tema com algumas cores. Precisamos de duas cores diferentes: uma para o tema escuro e outra para o tema claro.
+
+Então vamos copiar o tema e colar duas vezes seguidas para criarmos essas versões. Na primeira cópia, ao invés de tema, escreveremos const escuro ={}, para representar o tema escuro. Na outra cópia escreveremos const claro = {}, para representar o tema claro.
+
+Como o tema já tem uma configuração escura, não iremos alterar as cores do tema escuro. Já no tema claro, alteraremos os hexadecimais para outras cores.
+
+const claro = {
+    fundo: '#FFFFFF',
+    titulo: '#051933',
+    texto: '#000000',
+    branco: '#000000',
+    preto: '#FFFFFF',
+    cinza: '#EBEBEB',
+    ultimosVistos: '#CCEFFF',
+    botao: '#2A663C'
+    input: '#0P2A52'
+}COPIAR CÓDIGO
+Além disso, precisamos exportar esses dois objetos, então, após os temas, escrevermos export { tema, escuro, claro }. Vamos salvar e, em seguida, iremos para o "TemaContext.js". Agora vamos importar esses temas para o nosso Context com import { escuro, claro } from '../estilosGlobais'.
+
+No próximo vídeo pegaremos esses dois objetos que criamos e faremos uma lógica para alterar o tema do nosso app por completo. Nos vemos lá!
+
+@@03
+Para saber mais: a origem das coresw
+
+Vimos, na configuração do tema do app, que foi copiado e colado um trecho de código que já continha as cores do projeto. Você pode se perguntar: “mas de onde saiu isso? O Professor meteu essa do nada?”
+Na verdade, isso é bem comum no dia a dia de trabalho de uma pessoa desenvolvedora. Muitos projetos no dia a dia são feitos a partir de um mockup criado por um designer, que vai enviar um modelo e cores prontas para você implementar. O projeto que usamos nesse curso não foi diferente; é tarefa do designer pensar nas melhores cores que se encaixam em cada parte dos componentes e telas do aplicativo - e a tarefa do dev é implementar o protótipo criado pelo designer.
+
+Assim, usamos um arquivo chamado estilosGlobais.js que contém exatamente as paletas de cores que estavam no mockup do projeto, são elas:
+
+  fundo: '#051933',
+  titulo: '#FFFFFF',
+  texto: '#FFFFFF',
+  branco: '#FFFFFF',
+  preto: '#000000',
+  cinza: '#093245',
+  ultimosVistos: '#093245',
+  botao: '#A3FEBF',
+  input: '#FFFFFF',COPIAR CÓDIGO
+Cada cor foi nomeada para se adequar melhor em cada componente ou parte da tela. A criação desse arquivo global de estilos facilita na alteração de uma determinada cor no aplicativo.
+
+Por exemplo, imagine que o designer decidiu mudar a cor do botão de "azul" para "verde": se tivesse escrito o hexadecimal da cor do botão em cada tela que ele aparece, você precisaria ir em cada tela para alterar essa informação, o que pode ser demorado e maçante.
+
+Já da forma como veio no projeto base, usando o estilosGlobais.js, basta alterar o hexadecimal apenas nesse arquivo que a mudança será refletida em todas as telas automaticamente. Muito mais fácil e rápido, concorda?
+
+@@04
+Alterando o tema do Appw
+
+Já configuramos nosso ambiente para alterar o tema, mas ainda não estamos alterando. Vamos fazer isso.
+No nosso "TemaContext", criamos a variável temaAtual, que terá escuro ou claro, e importamos dois objetos, o escuro e o claro. Quando clicamos em algum dos objetos, aparece uma janela flutuante na parte inferior mostrando as propriedades e tipos de cada um, como fundo: string. Essas strings são os hexadecimais para alterar o tema da aplicação.
+
+O que precisamos fazer agora é implementar uma lógica para que ele ofereça ou o objeto escuro, ou o claro, para as páginas pegarem esse objeto e alterarem o tema. Existem duas formas de fazer isso.
+
+Uma delas é fazer um if normal que verifica a string do tema atual e retorna o objeto correspondente. Então se for 'claro', ele retorna o objeto claro, se for 'escuro', ele retorna o objeto escuro.
+
+Contudo, imaginemos uma situação em quem o aplicativo tenha vários temas, como "carnaval" e "copa do mundo", com cores referentes a esses temas. Uma forma de fazer com que a pessoa escolha entre vários temas é criando um dicionário.
+
+Quando usamos um dicionário, procuramos uma palavra e, ao encontrarmos, temos vária descrições para ela. Também conseguimos fazer um dicionário em JavaScript, que funcionará da seguinte forma: criaremos uma variável chamada const temas que será o dicionário, ou seja, um objeto contendo os temas.
+
+Nesse objeto, escreveremos o nome do tema como string e atribuiremos o objeto do tema em questão a ele.
+
+const temas = {
+    'escuro': escuro,
+    'claro': claroCOPIAR CÓDIGO
+Dessa forma, se procurarmos a string 'escuro' no dicionário, ele encontrará e retornará o objeto escuro, que terá todas as strings contidas nele. Para fazermos isso, retornaremos o objeto que queremos passar no TemaContext.Provider.
+
+Então escreveremos temaEscolhido: temas[temaAtual]. Na prática, criamos a variável temaEscolhido que irá procurar no nosso dicionário temas a palavra que estiver em temaAtual.
+
+return (
+    <TemaContext.Provide value={{
+        temaAtual,
+        setTemaAtual,
+        temaEscolhido: temas[temaAtual]
+    }}>COPIAR CÓDIGO
+Então, como temos useState('escuro'), ele irá procurar 'escuro' no nosso dicionário e retornará o objeto escuro, ou seja, o tema escolhido terá o objeto escuro. Se a palavra for "claro", ele procurará no dicionário a string 'claro', retornará o objeto claro e o colocará no temaEscolhido.
+
+Agora acessaremos o "telas > Configuracao > index.js" e importaremos o temaEscolhido também.
+
+//Trecho de código suprimido
+
+export default function Configuracao({ navigation })
+    const [estado, setEstado] = useState(true);
+
+    const { temaAtual, setTemaAtual, temaEscolhido } = useContext(TemaContext)COPIAR CÓDIGO
+Uma coisa que é importante falar é que, qualquer coisa que importamos do useContext, não conseguiremos importar diretamente para os "estilos.js". Isso porque a const estilo é um objeto, e só conseguimos importar o Context API para componentes que são funções.
+
+Então teremos que, de alguma forma, passar a importação que fizemos no "index.js" para o "estilos.js". Assim conseguiremos alterar o tema, que vem de "estilosGlobais", para claro ou escuro.
+
+Para fazer isso, vamos transformar o objeto estilo na função estilos para receber o parâmetro (tema). Então, antes do StyleSheet, vamos escrever () => { return. Por fim, fechamos a chave após o código.
+
+Agora que estilos é uma função, podemos passar a variável tema para os parâmetros, ou seja, export const estilos = (tema) => {. Esse tema que irá alterar o tema da nossa aplicação. Com isso, podemos até apagar a importação do "estilosGlobais", ou seja, o import { tema } from '../../estilosGlobais';.
+
+import { StyleSheet } from 'react-native';
+
+export const estilos = () => {
+    return StyleSheet.create({
+
+        //Trecho de código suprimido
+
+}COPIAR CÓDIGO
+Se abrirmos a tela de configuração do nosso aplicativo no emulador, perceberemos que ele não encontrará nada, porque o tema está vazio, o que significa que ele está buscando algo que ainda não existe. Então voltaremos para o "index.js" dessa tela e faremos algumas alterações.
+
+Primeiramente mudaremos o import de estilo para import { estilos } from /.estilos';. Depois, na function Configuracao, acima do return(), criaremos uma variável const estilo = estilos(temaEscolhido), ou seja, uma variável que recebe as informações do tema escolhido.
+
+//Trecho de código suprimido
+
+import { estilos } from './estilos';
+import { useContext } from "react";
+import { TemaContext } from "../../contexts/TemaContext';
+
+export default function Configuracao({ navigation })
+    const [estado, setEstado] = useState(true);
+
+    const { temaAtual, setTemaAtual, temaEscolhido } = useContext(TemaContext)
+
+    const estilo = estilos(temaEscolhido)
+
+    return (
+        //Trecho de código suprimidoCOPIAR CÓDIGO
+Agora, se entrarmos na tela de configuração na aplicação, percebemos que não dá nenhum erro e, acima do switch, está escrito "Tema: escuro". Ao clicarmos no switch, as cores do sistema mudam, assim como o texto, que passa para "Tema: claro". Portanto, conseguimos ativar tanto o modo escuro como o modo claro.
+
+Porém, ao sairmos da tela de configuração, percebemos que o tema das outras telas não foi alterado. Sendo assim, precisaremos repetir o processo que fizemos em "Configuracao" nas outra telas. Antes disso, no "index.js", apagaremos a const [estado, setEstado] = useState(true), porque não estamos mais utilizando.
+
+Em seguida, acessaremos o "telas > Login > estilos.js" e faremos as mesmas alterações do "estilos.js" de "Configuracao". Isso significa que mudaremos o nome para estilos e transformaremos em uma função com export const estilos (tema) => { return StyleSheet.create({//...}. Depois apagaremos a importação do "estilosGlobais", que não é mais necessária.
+
+No simulador, a aplicação irá quebrar, mas isso não tem problema. Acessaremos o "index.js" do "Login", importaremos o Context. Para isso, dentro da function Login, escrevemos const { temaEscolhido } = useContext(TemaContext).
+
+Em seguida, confirmaremos se ocorreu o import { TemaContext } e mudaremos o import de estilo para import { estilos } from './estilos';. Por fim, criaremos nossa variável const estilo = estilos(temaEscolhido).
+
+//Trecho de código suprimido
+
+import { estilos } from './estilos';
+import { useContext } from "react";
+import { TemaContext } from "../../contexts/TemaContext';
+
+export default function Login({ navigation })
+    const [email, setEmail] = useState("");
+    const [senha, setSenha] = useState("");
+
+    const { temaEscolhido } = useContext(TemaContext)
+    const estilo = estilos(temaEscolhido)
+
+    //Trecho de código suprimidoCOPIAR CÓDIGO
+Ao salvarmos, notamos que, no emulador, a tela Login está no tema escuro. Vamos pressionar o botão de "Entrar", para sermos direcionados para página principal, e depois na engrenagem no lado superior direito, para acessarmos a tela de configuração.
+
+Em "Configurações", notamos que está no "Tema: escuro", então vamos clicar no switch para ativarmos o "Tema: claro". Com isso, ao voltarmos para tela de Login, vemos que agora ela também mudou para tema claro.
+
+Falta aplicarmos essa alteração na última tela. Podemos copiar as variáveis { temaEscolhido } e estilo para aplicar no "index.js" da "Principal". Vamos colar essas variáveis dentro da function Principal, antes do return().
+
+export default function Principal({ navigation })
+    const ultimosVistos = []
+
+    const { temaEscolhido } = useContext(TemaContext)
+    const estilo = estilos(temaEscolhido)
+
+    //Trecho de código suprimidoCOPIAR CÓDIGO
+Em seguida, iremos importar o { TemaContext } e alterar o import de estilo para import { estilos } from './estilos';.
+
+import { estilos } from './estilos';
+import { TemaContext } from "../../contexts/TemaContext';COPIAR CÓDIGO
+Agora, no "estilos.js" do "Principal", vamos transformar o estilo em função com o mesmo código de antes, ou seja, export const estilos = (tema) => { return StyleSheet.create({//...}.
+
+Após salvarmos o código, observamos que, na aplicação, o tema de todas as telas foi alterado para o claro. Acessando a tela de configuração e mudaremos novamente para o tema escuro. Com isso, toda aplicação muda para tema escuro. Ao voltarmos para o tema claro, todo o app fica no tema claro.
+
+Essa é uma das formas para alterarmos o tema da nossa aplicação. Existem outras formas, inclusive bibliotecas externas que fazem isso, mas usamos o Context API para alterarmos o tema de forma global.
+
+Então alteramos a string de claro e de escuro e isso mudou a escolha do objeto que estamos importando do "estilosGlobais". Assim conseguimos refletir isso em todas as telas sem precisar ficar passando a informação por props. Importamos de forma individual o Context API para cada tela.
+
+No próximo vídeo, aplicaremos o Context API em outro contexto.
+
+@@05
+Mudança de temaw
+
+Você, como um bom e curioso Dev, percebeu que, ao apertar o switch (botão) na tela de configuração, o tema do aplicativo não alterou de escuro para claro, mesmo aplicando o Context API na mudança de tema.
+Isso aconteceu, porque, para aplicar a mudança do tema na aplicação, tivemos que fazer algumas mudanças nos nossos arquivos de estilos.js.
+
+Considerando o que estudamos até agora, o que pode ser feito para resolver esse problema?
+
+Importar o Context API do tema diretamente no arquivo de estilos.js e acessar a variável temaEscolhido. Dessa forma, é possível alterar as cores da tela da aplicação.
+ 
+Alternativa correta
+Fazer a importação do TemaContext nos arquivos index.js de cada tela e acessar os estados do tema em cada tela. Depois, é só substituir o "​​estilo" da tela pela variável temaEscolhido, que tudo funciona perfeitamente.
+ 
+Alternativa correta
+A importação do TemaProvider no arquivo App.js é a única alteração necessária para a mudança de tema na aplicação, não precisando alterar mais nenhum arquivo das telas ou componentes.
+ 
+Alternativa correta
+Fazer a importação do TemaContext nos arquivos index.js de cada tela e acessar os estados do tema, como o temaEscolhido, em cada tela. Em seguida, para passar essa variável para o arquivo de estilos.js, é necessário fazer uma mudança da exportação da variável estilo para uma função chamada estilos. Por se tratar de uma função, é possível enviar o temaEscolhido via parâmetro do arquivo index.js para o estilos.js e, com isso, a mudança do tema é aplicada em todas as telas.
+ 
+Excelente, parabéns!
+
+@@06
+Faça como eu fizw
+
+Realizamos a primeira aplicação real de um Context API: a funcionalidade de um botão que altera o tema (dark ou light mode) da aplicação.
+Agora, é sua vez de seguir os passos e a lógica ensinada em vídeo e colocar isso em prática no projeto.
+
+Vamos lá?
+
+Continue com os seus estudos, e se houver dúvidas, não hesite em recorrer ao nosso fórum!
+
+@@07
+O que aprendemos?w
+
+Nesta aula, vimos sobre:
+Como criar um setup de configuração do Context API para modificarmos o tema da nossa aplicação, conseguindo mexer em cores e fontes de letras;
+Como é possível acessar de forma global um objeto de cores vindo do Context API e passar esse objeto como parâmetro para os nossos arquivos de estilos, transformando nossos estilos em uma função. Isso tudo permitiu que nosso aplicativo mudasse todo o seu tema, do modo escuro para o claro.
+Você finalizou mais uma aula do nosso curso. Muito bem!
+
+Se ficou com alguma dúvida ou tem alguma curiosidade, não hesite e passe lá no nosso fórum para compartilhar com a gente.
+
+Nos vemos na próxima aula!
