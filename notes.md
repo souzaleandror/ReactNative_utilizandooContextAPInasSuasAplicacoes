@@ -827,3 +827,325 @@ Você finalizou mais uma aula do nosso curso. Muito bem!
 Se ficou com alguma dúvida ou tem alguma curiosidade, não hesite e passe lá no nosso fórum para compartilhar com a gente.
 
 Nos vemos na próxima aula!
+
+#### 08/01/2024
+
+@03-Autenticação com Context API
+
+@@01
+Projeto da aula anterior
+
+Caso queira começar o curso a partir desta aula, você pode baixar o projeto da aula anterior, clicando aqui.
+
+https://github.com/alura-cursos/react-native-context-api/tree/d04979003904f40c5b6a29cd48571877526f237b
+
+@@02
+Funcionamento da autenticação
+
+Acabamos de implementar o Context API para mudança de tema do nosso aplicativo. Vejamos o que mais conseguimos fazer com ele.
+Neste curso usaremos o Context API em três situações diferentes: na mudança do tema, na autenticação e para adicionar os itens no carrinho. A parte de temas já foi feita e a parte de adicionar os itens no carrinho será vista perto do final do curso. Nesta aula focaremos na implementação da autenticação do aplicativo.
+
+No nosso contexto, a autenticação estará voltada para tela de Login. É a parte em que o usuário digita o e-mail dele a senha para entrar, de fato, no aplicativo.
+
+A autenticação é implementada para fornecer uma segurança maior, tanto para as pessoas que estão fazendo a compra, quanto para nós que desenvolvemos o e-commerce. Não queremos que um usuário anônimo entre, compre em nome de outro usuário e não precise pagar nada.
+
+Por isso temos a autenticação, para termos mais segurança no aplicativo. Ainda assim existem outros contextos em que podemos usar a autenticação, como para personalização. Iremos comentar esse ponto posteriormente.
+
+Existem algumas formas que podemos implementar a segurança na autenticação no aplicativo. Algumas delas são: biometria facial, biometria digital, senha por desenho e senha numérica. No nosso contexto de e-commerce, a segurança será através do Login, que é o e-mail e a senha, que pode ser numérica ou uma string qualquer.
+
+A autenticação também nos permite ter uma maior customização do aplicativo. Quando logamos no Instagram, aparecem postagens e stories referentes a pessoas que seguimos. Se outra pessoa loga no perfil dela, ainda que seja o mesmo aplicativo, aparecerão outras informações para ela. Isso está relacionado à customização.
+
+Uma vez que a autentificação é feita através do Login do aplicativo, o app retorna as informações específicas para o usuário. No nosso caso, a customização estará relacionada aos "Últimos vistos", que são os produtos que a pessoa clicou e viu que tinha interesse. Eles ficarão na nossa lista ultimosVistos. Essa será uma customização para o usuário autenticado.
+
+Para fazermos essa implementação, teremos a tela de Login com os campos de e-mail e senha para serem preenchidos. Deixaremos um e-mail e uma senha no código para compararmos com os que forem digitados no input do aplicativo. Se o e-mail e senha passados no app forem iguais aos do código, autorizaremos o login da pessoa.
+
+Ao logar, deixaremos algumas informações do usuário diretamente no código, como o nome, telefone e a rua. Caso o usuário logado esteja correto, ou seja, se o e-mail e senha digitadas estiverem corretos, salvaremos essas informações em uma variável.
+
+Vocês devem estar se perguntando como é feita uma implementação de autenticação em um aplicativo real. No caso, temos o aplicativo no celular que também terá uma tela de autenticação.
+
+Quando a pessoa digitar o e-mail e a senha, ao invés da verificação ocorrer diretamente com os dados do código, essas informações serão passadas para um servidor, por meio de uma Web API. Então o servidor será o responsável por verificar se o usuário e senha digitados estão corretos. Caso estejam corretos, o servidor retornará, por meio de uma Web API, os dados criptografados.
+
+Antes de explicar como isso acontece, vejamos primeiro um exemplo do que é uma criptografia. Temos uma string na tela com mais de 20 caracteres e cheia de números, símbolos e letras maiúsculas e minúsculas. A princípio parecem caracteres aleatórios, mas é uma mensagem criptografada.
+
+Vamos entender porque fazemos criptografia. Imaginem-se logados em um WiFi público e aberto. Pensem que alguém consegue acessar esse WiFi e ter acesso às informações de quando vocês fizerem o Login no aplicativo do seu banco, por exemplo.
+
+Essa pessoa terá acesso ao seu nome, e-mail, telefone entre várias outras informações. Para evitar isso, as informações são passadas para o aplicativo de forma criptografada.
+
+A criptografia era muito utilizada em guerras. Imaginem um exército querendo se comunicar com a base para informar que atacarão o inimigo no dia seguinte, e o inimigo intecepta essa mensagem. Se ele acessa a mensagem, ele conseguirá se proteger do ataque e até contra-atacar.
+
+Para evitar isso, o exército mandava uma mensagem que parecia não fazer sentido, mas que a base entendia. Então ao invés de falar "vamos atacar o inimigo amanhã", eles falavam "hoje o dia está lindo". O inimigo pegaria essa mensagem e não entenderia nada. Contudo, a base saberá que se chegar a mensagem "hoje o dia está lindo", quer dizer que eles atacarão o inimigo amanhã.
+
+Assim eles conseguiam se entender e se comunicar. Com o passar do tempo, a tecnologia e o poder computacional aumentaram, e conseguimos transformar a mensagem "vamos atacar o inimigo amanhã" nessa string cheia de caracteres, que chamamos de hash.
+
+Para descriptografar, precisamos de uma chave de acesso, ou seja, um código, que pode ser um número ou uma string. Com esse código, podemos usar uma função que pega a mensagem criptografada, mistura com a chave de acesso e traduz. Acreditem ou não, a criptografia exibida na tela significa "Hello World".
+
+Dessa forma, os atualmente as informações do usuário são passadas criptografadas e o aplicativo descriptografa e exibe como endereço, telefone, e-mail, entre outros. Isso fornece uma maior segurança para o aplicativo e para as pessoas, uma vez que são dados sensíveis para serem exibidos em qualquer lugar.
+
+É importante salientar que, neste curso, não iremos implementar a criptografia. A explicação foi para entenderem como a autenticação acontece na prática, seja da forma que eu expliquei ou de outra forma.
+
+Contudo, neste curso faremos a autenticação apenas com o e-mail e senha, que já estarão completamente ditados no código. Então não implementaremos a segurança de criptografia.
+
+Em seguida faremos a implementação da autenticação.
+
+@@03
+Para saber mais: tipos de autenticação
+
+A autenticação é de suma importância para garantir a segurança da nossa aplicação. Por isso, caso tenha curiosidade em saber mais sobre autenticação e os tipos que são usados atualmente, dê uma conferida neste artigo da nossa plataforma! Tenho certeza que será muito útil.
+Bons estudos!
+
+https://www.alura.com.br/artigos/tipos-de-autenticacao?_gl=1*peynzo*_ga*MTgwMzIzMjk2Ni4xNjg4ODE5OTcz*_ga_1EPWSW3PCS*MTcwNDc1MzIwMS4xNTcuMS4xNzA0NzUzODA5LjAuMC4w*_fplc*dW1nRmczQUYwa3N6VjRIN1lueU1Yb01qTTIwWDgxZjZPeHdUcFh1Q3lUNmFiSTRHWFl6VVFPNG1nMW1TSnozc09xN3g4cWZ6NmdhdyUyQms4R1FUVFVDSFJNdTEwVjdJZk9VQlRsY0dQWXoyUyUyRnA2ZWlLZWdvb3I0T2hQdkdqUSUzRCUzRA..
+
+@@04
+Revisando autenticação
+
+Quando trabalhamos com aplicativos que envolvem pagamento e dados dos usuários (CPF, cartão de crédito etc), o uso da autenticação se faz bastante necessário, já que não queremos que as pessoas tenham suas informações roubadas de um App que fizemos, não é mesmo?
+Com base no que foi abordado na videoaula, o que podemos afirmar sobre a autenticação de um aplicativo?
+
+No dia a dia, uma aplicação voltada a garantir a segurança de seus usuários utiliza uma autenticação com login (email e senha) e os dados do usuário, como o nome, email e telefone, são retornados diretamente para o aplicativo de forma criptografada, assim, só o código interno do App decifra os dados retornados do usuário.
+ 
+Excelente, parabéns!
+Alternativa correta
+A criptografia foi uma ideia criada para o contexto das guerras, garantindo que as mensagens enviadas não fossem capturadas pelo exército inimigo. Atualmente esse método ainda é utilizado, mas em menor proporção, e está quase em desuso. Os Apps, por exemplo, garantem muita segurança sem precisar usar criptografia.
+ 
+Alternativa correta
+É fortemente recomendado que toda aplicação tenha autenticação, visto que garante maior segurança para o seu App e protege os dados do usuário.
+ 
+Alternativa correta
+No dia a dia, uma aplicação voltada a garantir a segurança de seus usuários utiliza uma autenticação com login (email e senha) e os dados do usuário, como o nome, email e telefone são retornados diretamente para o aplicativo em formatos de string.
+ 
+Alternativa correta
+Existem várias formas de autenticar uma aplicação. Uma delas é usar o email e senha, e também podemos implementar reconhecimento facial ou biométrico.
+ 
+Perfeito. A maneira de autenticação mais comum solicita email e senha, mas atualmente vários Apps já permitem que o usuário se autentique simplesmente usando sua biometria.
+
+@@05
+Tela de autenticação
+
+Agora que entendemos melhor como funciona a autenticação, iremos implementá-la usando o Context API.
+Da mesma forma que fizemos para mudança de tema, criaremos um Context voltado para autenticação, então acessaremos "src > contexts" e criaremos um novo arquivo chamado "AutenticacaoContext.js". A estrutura desse arquivo será similar a que fizemos no "TemaContext" e no "GlobalContext".
+
+Sendo assim, vamos copiar o código do "GlobalContext", colar no "AutenticacaoContext" e fazer as alterações necessárias, para ficar voltado para autenticação. Então onde estiver escrito GlobalContext mudaremos para AutenticacaoContext e onde está InfoProvider será AutenticacaoProvider.
+
+Além disso, não usaremos as variáveis do "GlobalContext" para a autenticação, então podemos apagá-las. Também apagaremos o conteúdo que estiver em value={}.
+
+import { createContext, useState } from 'react'
+
+export const AutenticacaoContext = createContext({})
+
+export function AutenticacaoProvider( {children} ) {
+
+    return (
+        <AutenticacaoContext.Provider value={{
+
+        }}>
+            {children}
+        </AutenticacaoContext.Provider>
+    )
+}COPIAR CÓDIGO
+Precisaremos de duas coisas na autenticação: uma função para logar no sistema e uma variável para salvar as informações do usuário, como nome, e-mail e telefone. Para isso, vamos criar uma const [usuario, setUsuario] que receberá o useState(). Inicialmente ele será um objeto vazio, porque ainda não teremos informações do usuário, ou seja, const [usuario, setUsuario] = useState({}).
+
+Em seguida, criaremos a função para logar, então vamos escrever a function login(). Dentro dessa função, passaremos duas informações como parâmetro, para verificarmos se estão corretas, no caso, o email e a senha, que são os dois inputs da tela de login.
+
+Dentro da função, faremos uma verificação simples usando o if/else. No if, usaremos um e-mail fictício, eu vou usar `'andre@email.com', e uma senha. Portanto,if(email == 'andre@email.com' && senha == 123){}. Nesse caso, retornaremos a string'ok'. Caso o e-mail e a senha não sejam válidos, faremos umelseonde retornaremos'E-mail ou senha incorretos'`.
+
+//Trecho de código suprimido
+
+export function AutenticacaoProvider( {children} ) {
+    const [usuario, setUsuario] = useState({})
+
+    function login(email, senha){
+        if(email == 'andre@email.com'
+        && senha == 123){
+            return 'ok'
+        }
+        else {
+            return 'E-mail ou senha incorretos';
+        }
+    }
+
+//Trecho de código suprimidoCOPIAR CÓDIGO
+Antes dele retornar o 'ok', ele pode salvar as informações do usuário. Como estamos fazendo um login fictício, apenas para testarmos a autenticação na tela de Login, também criaremos dados fictícios para o usuário que estamos logando.
+
+Salvaremos as informações do usuário com setUsuario(), que escreveremos dentro do if. Essas informações serão: nome, email, endereco e telefone. Nesse caso, usarei dados fictícios. Além disso, usaremos o mesmo e-mail do login, então podemos declarar como email: email, passando o dado que recebemos nos parâmetros do if().
+
+    function login(email, senha){
+        if(email == 'andre@email.com'
+        && senha == 123){
+            setUsuario({
+                nome: 'André',
+                email: email,
+                endereco: 'Av. Paulista',
+                telefone: '(11) 99999-9999'
+            return 'ok'
+        }
+        else {
+            return 'E-mail ou senha incorretos';
+        }
+    }COPIAR CÓDIGO
+Agora, ao fazermos o login, salvamos esses dados na variável usuario. Deixaremos esses dados disponíveis globalmente usando o Context, para conseguirmos acessar nas outras telas.
+
+Sendo assim, no Autenticacao.Provider value={{}}, passaremos o usuario. Além disso, passaremos também a função login, assim podermos usá-la na tela de Login.
+
+//Trecho de código suprimido
+
+return (
+    <AutenticacaoContext.Provider value={{
+        usuario,
+        login
+    }}>
+        {children}
+    </AutenticacaoContext.Provider>
+)COPIAR CÓDIGO
+Agora precisamos usar a AutenticacaoContext globalmente na nossa aplicação. Para isso, na coluna da esquerda, vamos acessar o "App.js" e, da mesma forma que fizemos com o TemaProvider, faremos com o AutenticacaoProvider.
+
+Começaremos importando o { AutenticacaoProvider }. Em seguida, antes das <Rotas />, mas dentro do <TemaProvider>, colocaremos nosso <AutenticacaoProvider>. Vocês também podem deixar a autenticação por volta de tudo, mas eu prefiro envolver tudo com o tema. Com isso conseguiremos acessar o AutenticacaoProvider em qualquer tela.
+
+import Rotas from "./src/rotas";
+import { TemaProvider } from "./src/contexts/TemaContext";
+import { AutenticacaoProvider }  from "./src/contexts/TemaContext";
+
+export default function App() {
+    return (
+        <TemaProvider>
+            <AutenticacaoProvider>
+                <Rotas />
+            </AutenticacaoProvider>
+        </TemaProvider>
+    );
+}COPIAR CÓDIGO
+A primeira tela na qual usaremos o AutenticacaoContext é a de Login. para conseguirmos fazer o login. Então acessaremos "src > telas > Login > index.js" e importaremos o Context de autenticação, assim como fizemos com o Context de Tema.
+
+Portanto, dentro da function Login vamos criar uma const { login }, para chamar a função login(), e passar o useContext(AutenticacaoContext). Em seguida será feito o import do { AutenticacaoContext}, na linha 6.
+
+//Trecho de código suprimido
+
+import { AutenticacaoContext } from "../../contexts/AutenticacaoContext";
+
+export default function Login({ navigation }) {
+    const [email, setEmail] = useState("");
+    const [senha, setSenha] = useState("");
+
+    const { temaEscolhido } = useContext(TemaEscolhido)
+    const estilo = estilos(temaEscolhido)
+
+    const { login } = useContext(AutenticacaoContext)COPIAR CÓDIGO
+Agora temos acesso à função login(). A partir disso, criaremos uma função dentro deste arquivo da página de Login, que será a function logandoNoSistema(){}. Dentro dessa função, usaremos a login().
+
+Como a função login() retorna uma string 'ok' ou 'Email ou senha incorretos', podemos salvar isso em uma variável. Então escrevemos const resultado = login() e passaremos (email, senha) como parâmetro'.
+
+//Trecho de código suprimido
+
+function logandoNoSistema(){
+    const resultado = login(email, senha)
+}COPIAR CÓDIGO
+Em seguida, faremos um if/else. Se o resultado for 'ok', navegaremos para próxima tela. Caso seja não seja válido, vamos exibir uma informação, usando o Alert, que será importado do React Native. Então voltaremos aos nossos imports para importarmos o Alert.
+
+import { Text, View, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';COPIAR CÓDIGO
+Agora, dentro do else{}, colocaremos Alert.alert() e passaremos o (resultado), que será a mensagem 'Email ou senha incorretos'.
+
+//Trecho de código suprimido
+
+function logandoNoSistema(){
+    const resultado = login(email, senha)
+    if(resultado == 'ok'){
+
+    }
+    else {
+        Alert.alert(resultado)
+    }
+
+}COPIAR CÓDIGO
+Voltando para o if(), caso dê 'ok', navegaremos para outra tela. Atualmente a tela de Login já tem um botão Entrar que, ao ser clicado, usa o navigation.navigate para a tela Principal. O que faremos é retirar o navigation do onPress={}. No lugar, passaremos o logandoNoSistema().
+
+//Trecho de código suprimido
+
+<TouchableOpacity
+    style={estilo.botao}
+    onPress={() => logandoNoSistema()}
+>COPIAR CÓDIGO
+Em seguida, na logandoNoSistema(), faremos a navegação entre telas se o resultado for 'ok'.
+
+//Trecho de código suprimido
+
+function logandoNoSistema(){
+    const resultado = login(email, senha)
+    if(resultado == 'ok'){
+        navigation.navigate('Principal')
+    }
+    else {
+        Alert.alert(resultado)
+    }
+
+}COPIAR CÓDIGO
+Vamos testar. Acessando a tela de Login no emulador, vamos digitar qualquer coisa nos campos de e-mail e senha e, em seguida, clicar no botão "Entrar". Com isso aparece uma caixa de mensagem no centro da tela do emulador escrito "Email ou senha incorretos". No canto inferior direito da caixa de mensagem tem um "OK", onde clicamos para fechar o alerta.
+
+Agora digitaremos o e-mail e senha válidos, que foram os que passamos no nosso Context. Ao clicarmos em "Entrar", somos direcionados para nossa tela de produtos, que é a principal.
+
+O que podemos melhorar nessa autenticação? Percebam que a senha está sendo exibida, mas normalmente ela é deixada oculta. Para fazermos isso, no TextInput /> da senha, vamos colocar secureTextEntry={}, porque é uma questão de segurança. Depois passaremos {true}.
+
+Agora, no emulador, percebemos que tudo que escrevemos no campo da senha fica em formato de <•>, não exibindo a senha diretamente na tela. Quando digitamos a senha corretamente e clicamos em entrar, percebemos que ainda somos direcionados para tela de produtos.
+
+Outra coisa que podemos fazer com o Context de autenticação é, no canto superior esquerdo da tela de produtos, exibir o nome do usuário onde está escrito "Olá, NOME". Para isso, na coluna da esquerda, acessamos "Principal > index.js".
+
+Em seguida, importaremos o Context de autenticação. Então, dentro da function Principal, escreveremos const { usuario } = useContext(AutenticacaoContext). Com isso, estamos pegando o usuário do nosso Context de autenticação. Lembrem-se que é necessário que o { AutenticacaoContext } seja importado
+
+//Trecho de código suprimido
+
+import { AutenticacaoContext } from "../../contexts/AutenticacaoContext";
+
+export default function Principal({navigation}) {
+    const ultimosVistos = []
+
+    const { temaEscolhido } = useContext(TemaEscolhido)
+    const estilo = estilos(temaEscolhido)
+
+    const { usuario } = useContext(AutenticacaoContext)COPIAR CÓDIGO
+Feito isso, onde está escrito Olá, NOME, vamos trocar por Olá, {usuario?.nome}. O <?> é para sabermos se o usuário não é vazio e o .nome é para acessarmos a propriedade que queremos, ou seja, o nome. Salvando, no emulador vemos que a saudação no lado superior esquerdo mudou para "Olá, André".
+
+Nessa aula implementamos o Context API para autenticação. Fizemos o login na tela de Login e conseguimos acessar os dados do usuário logado também na tela de produtos.
+
+Nas próximas aulas, aprenderemos a usar o Context API em outras situações.
+
+@@06
+Faça como eu fiz: implementando autenticação
+
+Nesta aula, configuramos a nossa aplicação para aplicar a parte de autenticação, usando o Context API.
+Bora colocar isso em prática?
+
+Imagine que você quer oferecer uma experiência mais personalizada para o usuário do app, o que é possível criando um sistema de autenticação e que registra as informações do usuário.
+
+Dessa forma, configure o ambiente do seu app e implemente a autenticação simples, utilizando login e senha. Para fazer isso, siga o passo a passo:
+
+Crie o arquivo do Context API para Autenticação;
+Deixe ele disponível globalmente no App.js;
+Crie uma variável para salvar as informações do usuário logado;
+Construa uma função responsável pelo login.
+Caso tenha outra ideia e consiga realizar na autenticação, sinta-se à vontade para realizar. Faça o teste e veja se o app funciona e apresenta os comportamentos esperados.
+
+Depois, poste do fórum o seu projeto, vamos adorar ver a evolução do seu trabalho. Precisando de ajuda ou tendo alguma dúvida, não deixe de nos perguntar no fórum para que possamos te ajudar!
+
+Bons estudos ;)
+
+A autenticação foi implementada no projeto usando o Context API.
+Vamos ver uma forma possível de solucionar o exercício proposto?
+
+Primeiro, nós criamos um arquivo para o Context API de autenticação e deixamos ele globalmente visível por adicionando-o no App.js;
+Em seguida, criamos uma função de login que verificava se o email e senhas digitadas estavam corretas;
+Depois, salvamos as informações do usuário logado para poder acessar futuramente em outras telas da aplicação.
+Se quiser dar uma conferida na forma que foi implementada, dê uma olhadinha neste repositório do Github.
+
+https://github.com/alura-cursos/react-native-context-api/tree/11428bbc625781235ceb42473f79aa633b49ecef
+
+@@07
+O que aprendemos?
+
+Nesta aula, aprendemos sobre:
+A importância de uma autenticação em um aplicativo e quando que ela é utilizada. Vimos que no dia a dia, as mensagens de autenticação vem criptografadas para garantir maior segurança dos dados do usuário que está logando no sistema;
+A aplicação do Context API para simular uma autenticação com o login, usando email e senha e salvando os dados do usuário de forma global na aplicação para que conseguíssemos exibir esses dados (como o nome) nas mais diversas telas.
+Agora, você já deve conseguir criar aplicações com uma autenticação simples. Muito bom, né?
+
+Você chegou ao final de mais uma aula. Parabéns!
+
+Não esqueça de visitar o nosso fórum. Lá você pode encontrar algumas questões levantadas por outros alunos, compartilhar algo e caso tenha ficado alguma dúvida, podemos te ajudar.
+
+Nos vemos na próxima aula!
