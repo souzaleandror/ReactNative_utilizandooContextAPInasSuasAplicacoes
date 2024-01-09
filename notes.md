@@ -1149,3 +1149,512 @@ Você chegou ao final de mais uma aula. Parabéns!
 Não esqueça de visitar o nosso fórum. Lá você pode encontrar algumas questões levantadas por outros alunos, compartilhar algo e caso tenha ficado alguma dúvida, podemos te ajudar.
 
 Nos vemos na próxima aula!
+
+#### 09/01/2024
+
+@04-Criando telas e salvando no carrinho
+
+@@01
+Projeto da aula anterior
+
+Caso queira começar o curso a partir desta aula, você pode fazer o download do projeto, clicando aqui.
+
+https://github.com/alura-cursos/react-native-context-api/tree/11428bbc625781235ceb42473f79aa633b49ecef
+
+@@02
+Adicionando itens ao carrinho
+
+Até esse momento, aplicamos o Context API em duas situações diferente: a mudança do tema, de escuro para claro, e na autenticação, onde fizemos o login. Contudo, por ser um aplicativo de e-commerce, seria interessante colocarmos funcionalidades de e-commerce, ou seja, adicionar os itens no carrinho. Então vamos fazer isso.
+Seguindo nosso padrão, acessaremos "src > context" e, nesta pasta, criaremos um novo arquivo de Context API, agora voltado para o carrinho. Então clicamos com o botão direito na pasta, selecionamos "Novo Arquivo" no menu flutuante e nomeamos como "ProdutosContext.js".
+
+A estrutura nesse arquivo será semelhante aos outros Context que criamos, então podemos copiar a estrutura do "GlobalContext" e colar no "ProdutosContext". Em seguida, alteraremos as informações para corresponder ao novo Context.
+
+Começaremos trocando de GlobalContext para ProdutosContext. Em seguida, o InfoProvider será substituído por ProdutosProvider. Apagaremos as variáveis e estados que foram criados, porque não vamos utilizá-los, e deixaremos o value={}, a princípio, vazio.
+
+import { createContext, useState } from 'react';
+
+export const ProdutosContext = createContext({})
+
+export const ProdutosProvider( {children} )
+
+    return (
+        <ProdutosContext.Provider value={{
+
+        }}>
+            {children}
+        </ProdutosContext.Provider>
+    )
+}COPIAR CÓDIGO
+Agora colocaremos esse Context em volta das nossas rotas para termos acesso a ele em todas as telas. Então vamos em "App.js", importaremos o { ProdutosContext } e depois, antes das <Rotas /> colocaremos o <ProdutosProvider>. Agora teremos acesso às variáveis de forma global.
+
+//Trecho de código suprimido
+
+import { ProdutosProvider } from "./src/contexts/ProdutosContext";
+
+export default function App() {
+    return (
+        <TemaProvider>
+            <AutenticacaoProvider>
+                <ProdutosProvider>
+                    <Rotas />
+                </ProdutosProvider>
+            </AutenticacaoProvider>
+        </TemaProvider>
+    )COPIAR CÓDIGO
+Feito isso, precisaremos colocar as funcionalidades do carrinho dentro do Context. Sendo assim, voltaremos para o "ProdutosContext".
+
+No emulador, acessaremos para o tela de produtos, colocando o e-mail e senha corretos nos campos de login e pressionaremos o botão "Entrar". Percebam que, nos nossos cards de produtos, temos o botão de <+>, localizado na extrema direita.
+
+O ideal seria que, ao clicar neste botão, o item fosse adicionado e salvo ao carrinho. Além disso, que o valor do indicador, que fica no canto inferior direito do ícone de carrinho, fosse alterado para quantidade de itens adicionados.
+
+Para fazermos isso, criaremos uma variável no ProdutosProvider(). Então vamos escrever const [quantidade, setQuantidade] = useState(0);. Portanto, passamos a quantidade e o setQuantidade para essa variável e iniciamos o useState() com 0.
+
+Também criaremos um estado para o carrinho, escrevendo const [carrinho, setCarrinho] = useState([]);. Iniciamos o useState() com um vetor vazio, que será uma lista de produtos.
+
+Fora isso, em um e-commerce, quando acessamos um produto, ele aparece no histórico de últimos vistos. Para essa aplicação, também faremos os últimos vistos, então escreveremos uma variável const [ultimosVistos, setUltimosVistos] = useState([]);. Então também iniciamos a ultimosVistos com um vetor vazio.
+
+import { createContext, useState } from 'react';
+
+export const ProdutosContext = createContext({})
+
+export const ProdutosProvider( {children} )
+    const [quantidade, setQuantidade] = useContext(0);
+    const [carrinho, setCarrinho] = useContext([]);
+    const [ultimosVistos, setUltimosVistos] = useContext([]);
+
+    return (
+        <ProdutosContext.Provider value={{
+
+        }}>
+            {children}
+        </ProdutosContext.Provider>
+    )
+}COPIAR CÓDIGO
+A ideia é que, ao clicar no botão <+>, o produto entre na lista de últimos vistos e no carrinho. Portanto precisamos fazer a lógica para que, ao clicar no botão, ele salve essas informações.
+
+Para isso, criaremos a function viuProduto(){}, passando o produto para os parâmetros, ou seja, (produto). Assim que chamarmos essa função, implementaremos a quantidade, então vamos passar a quantidade dentro da função com setQuantidade(quantidade+1).
+
+export const ProdutosProvider( {children} )
+    const [quantidade, setQuantidade] = useContext(0);
+    const [carrinho, setCarrinho] = useContext([]);
+    const [ultimosVistos, setUltimosVistos] = useContext([]);
+
+    function viuProduto(produto){
+        setQuantidade(quantidade+1)
+    }COPIAR CÓDIGO
+Além disso, precisamos adicionar o item no carrinho. Então vamos criar uma variável dentro da viuProduto(), escrevendo let novoCarrinho = carrinho, ou seja, atribuindo o vetor do carrinho a essa variável.
+
+Em seguida, faremos um push() para colocar os itens na nova lista que criamos, ou seja, novoCarrinho.push();, e passaremos como parâmetro o (produto). Agora que temos uma nova lista, salvaremos ela dentro do carrinho, escrevendo setCarrinho(novoCarrinho).
+
+function viuProduto(produto){
+    setQuantidade(quantidade+1)
+
+    let novoCarrinho = carrinho
+    novoCarrinho.push(produto)
+    setCarrinho(novoCarrinho)
+}COPIAR CÓDIGO
+Em seguida, precisamos fazer os últimos vistos, que é um pouco diferente do carrinho. Isso porque, quando clicamos no <+> do produto "Camisa bonita", ele adicionará uma camisa no carrinho. Se clicarmos novamente no <+> do mesmo produto, significa que queremos comprar duas camisas, que serão adicionadas no carrinho.
+
+Contudo, não é interessante que mostremos a "Camisa bonita" duas vezes no últimos vistos, porque é a mesma camisa. Só precisamos mostrar o produto nesta lista apenas uma vez, sem mostrar a quantidade.
+
+Para fazermos isso, usaremos uma propriedade do JavaScript, que também existem em algumas outras linguagens, que é o Set. O Set é uma maneira de criarmos um objeto com vários itens dentro. Ao adicionar um novo item, ele verificará se o item já existe na lista e, se tiver, ele não adiciona. Portanto ele só adiciona itens novos.
+
+Vamos criar uma variável chamada let novoUltimosVistos. Nela criaremos um novo objeto com a propriedade Set, escrevendo new Set(), passando como parâmetro os (ultimosVistos).
+
+Portanto temos uma variável que é um objeto com alguns itens dentro e adicionaremos mais um item lá. Para isso vamos chamar a novoUltimosVistos e adicionar um novo produto com .add(produto).
+
+function viuProduto(produto){
+    setQuantidade(quantidade+1)
+
+    let novoCarrinho = carrinho
+    novoCarrinho.push(produto)
+    setCarrinho(novoCarrinho)
+
+    let novoUltimosVistos = new Set(ultimosVistos);
+    novoUltimosVistos.add(produto)
+}COPIAR CÓDIGO
+O que está acontecendo é o seguinte: se na nossa lista temos "mesa, sofá, camisa", se tentarmos adicionar um novo sofá, ele irá checar que o sofá já existe na lista e não vai adicionar. Com isso, continuará tendo apenas três itens, que é o que precisamos.
+
+Se fizéssemos um .push(), como fizemos no carrinho, ele adicionaria outro sofá na lista do exemplo anterior. Isso não é o que queremos para o ultimosVistos, queremos que ele confira se o item já existe e só adicione na lista caso ele não exista. É isso que o Set() faz.
+
+O novoUltimosVistos é um objeto que, dentro dele, terá vários objetos, que serão os produtos. Entretanto, para exibirmos esses produtos em formato de lista, precisamos converter o novoUltimosVistos em uma array.
+
+É muito simples fazer isso no JavaScript. Escreveremos um setUltimosVistos() e, ao invés de passarmos apenas os novoUltimosVistos, colocaremos em volta de colchetes com ... na frente. Portanto temos setUltimosVistos([...novoUltimosVistos]).
+
+Isso significa que ele fará uma cópia dos itens dentro do novoUltimosVistos e converterá em um vetor, o qual conseguiremos usar normalmente. Para finalizar, dentro do .Provider passaremos todas essas informações.
+
+//Trecho de código suprimido
+
+    let novoUltimosVistos = new Set(ultimosVistos);
+    novoUltimosVistos.add(produto)
+    setUltimosVistos([...novoUltimosVistos])
+}
+
+return (
+    <ProdutosContex.Provider value{{
+        quantidade,
+        carrinho
+        ultimosVistos
+        viuProduto
+    }}>COPIAR CÓDIGO
+Vamos salvar e importar esse Context que criamos para tela Principal. Então, na coluna da esquerda, acessamos "telas > Principal > index.js".
+
+Primeiramente vamos separar o que já fizemos para ficar mais organizado, quebrando as linhas dos nossos const. Em seguida faremos outro import com const { quantidade, ultimosVistos }, vindos do useContext(ProdutosContext).
+
+Com isso, o VS Code já faz o autoimport do { ProdutosContext }, mas caso não aconteça, é necessário importá-lo. Além disso, na function Principal já tinha uma variável chamada ultimosVistos, mas vamos apagá-la porque não vamos mais utilizá-la.
+
+//Trecho de código suprimido
+
+import { ProdutosContext } from "../../contexts/ProdutosContext";
+
+export default function Principal({navigation}) {
+
+    const { 
+        temaEscolhido
+    } = useContext(TemaEscolhido)
+    const estilo = estilos(temaEscolhido)
+
+    const {
+        usuario
+    } = useContext(AutenticacaoContext)
+
+    const {
+        quantidade,
+        ultimosVistos
+    } = useContext(ProdutosContext)COPIAR CÓDIGO
+Por fim, podemos passar a quantidade no lugar do 0, deixando como <Text style={estilo.carrinhoQuantidade}>{quantidade}</Text>. Nós não importamos o carrinho para "Principal" porque nessa tela não exibimos nossa lista de carrinhos, apenas a quantidade e os últimos vistos.
+
+Agora acessaremos o aplicativo no nosso emulador e faremos o login para acessarmos a nossa tela principal. Feito isso, vamos testar. Ao clicarmos no botão <+>, que fica na extrema direita do card do produto, nada acontece ainda. Isso porque o botão <+> está dentro do Produto.
+
+Esse Produto é um componente criado na pasta "componentes/produto". Então vamos acessar "src> componentes/Produto > index.js" e importar o ProdutosContext para lá.
+
+Então vamos criar a const { viuProduto } e passar o useContext(ProdutosContext). Além disso, vamos conferir se ocorreu o import do { ProdutosContext } e importar o { useContext } do React.
+
+//Trecho de código suprimido
+
+import { ProdutosContext } from "../../contexts/ProdutosContext";
+import { useContext } from 'react/cjs/react.production.min';
+
+export default function Produto({item, adicionar}) {
+
+    const {
+        viuProduto
+    } = useContext(ProdutosContext)
+
+//Trecho de código suprimidoCOPIAR CÓDIGO
+Em seguida, no <TouchableOpacity>, que é o botão, no onPress={() => {}} chamaremos o viuProduto() passando o (item) como parâmetro dessa função. Esse item é o produto que foi clicado.
+
+{ adicionar &&
+<TouchableOpacity style={estilos.botaoAdicionar} onPress={() => viuProduto(item)}>
+    <Text style={estilos.botaoTexto}>+</Text
+</TouchableOpacity>}COPIAR CÓDIGO
+Salvamos e, no nosso emulador, ao clicarmos no <+> do produto "Tênis bacana", ele é adicionado no carrinho e aparece nos "Últimos vistos", que fica na parte superior da lista de produtos. Se clicarmos no <+> da "Mesa chique", notamos que indicador do carrinho passa para "2" e a mesa também aparece na lista dos "Últimos vistos".
+
+Se clicarmos no <+> do "Tênis bacana" novamente, vemos o indicador do carrinho passar para "3", ou seja, o tênis foi para o carrinho, mas os "Últimos vistos" continua com dois itens. É exatamente isso que queríamos.
+
+Se voltarmos para o "index.js" da tela "Principal", notaremos que temos a FlatList com data={produtos}. Esses produtos são os itens que aparecem nos cards do nosso aplicativo.
+
+Temos também a ListHeaderComponent, que é o header da nossa FlatList, ou seja, a parte que fica acima da lista de produtos no aplicativo, onde estão os "Últimos vistos". Nele criamos uma <View> que verifica se tem algum item nos ultimosVistos e, se tiver, ele coloca uma nova FlatList, mas com scroll horizontal, carregando os ultimosVistos.
+
+Para ficar ainda melhor, podemos configurar para que, se não tiver nenhum item no carrinho, ele não mostrar nenhum indicador, ao invés de mostrar indicador "0". Para isso, vamos acessar a parte do código onde está escrito {quantidade}, colocar a <View> inteira dentro de {} e, dentro das chaves, escrever quantidade >0 &&.
+
+//Trecho de código suprimido
+
+{quantidade > 0 && <View style={estilo.carrinhoQuantidadeArea}>
+    <Text style={estilo.carrinhoQuantidade}>{quantidade}</Text>
+</View>}
+
+//Trecho de código suprimidoCOPIAR CÓDIGO
+É como se tivéssemos escrito um if, ou seja, se quantidade for maior que "0", ele mostra a quantidade, senão ele não mostra nenhum indicador. Atualmente o indicador aparece no carrinho do nosso aplicativo porque adicionamos itens, mas se não tivéssemos colocado nada, o indicado não apareceria.
+
+Para testarmos, vamos recarregar a aplicação, abrindo o terminal e passando o comando "R", de reload. A nossa aplicação recarrega e somos redirecionados para tela de Login.
+
+Vamos logar novamente e, quando acessamos a tela principal, notamos que o ícone do carrinho, no canto superior direito, não possui nenhum indicador. Quando clicamos no <+> de algum produto, o indicador aparece, mostrando "1".
+
+Nesta aula aprendemos a adicionar itens no carrinho, usando o Context API. Também descobrimos que podemos usar uma função do Context em um componente, não apenas nas telas, e usamos os estados na tela Principal.
+
+Aprendemos como adicionar um item usando o Set(), que é uma propriedade do JavaScript que nos permite adicionar itens em um objeto, verificando se esse item já existe lá. Caso exista, ele não será duplicado.
+
+No próximo vídeo criaremos a tela para ver a lista de carrinhos.
+
+@@03
+Faça como eu fiz: tela do carrinho
+
+Até esse ponto, configuramos a nossa aplicação para aplicar o Context API na lista do nosso carrinho.
+Agora é sua vez! Configure seu ambiente, caso ainda não tenha feito isso, e faça o Context API para armazenar as informações referentes ao carrinho de compras e exiba elas na tela de Resumo. Para isso, siga os passos a seguir:
+
+Criar o Context API para os produtos;
+Adicionar esse Context no App.js para deixá-lo globalmente visível na aplicação toda;
+Criar a função para adicionar os itens no carrinho e também adicionar os últimos vistos, mas lembrando que os últimos vistos não devem repetir seus produtos nele.
+Precisando de ajuda, pergunte no fórum para que possamos te ajudar!
+
+Bons estudos ;)
+
+O nosso objetivo era fazer a adição dos produtos na nossa lista do carrinho. E, para isso, primeiro, criamos um Context API específico para os produtos e depois adicionamos ele no nosso App.js para que ficasse globalmente visível.
+Depois, criamos nossos estados (funções e variáveis) para salvar os dados corretamente no carrinho e na lista dos “últimos vistos”, configurando para que os “últimos vistos” não se repetissem dentro do carrinho.
+
+Se quiser dar uma conferida na forma que foi implementada, dê uma olhadinha nesse repositório do Github.
+
+https://github.com/alura-cursos/react-native-context-api/tree/186bc228c1c37c01de98765f498794475cf10912
+
+@@04
+Criando mais telas
+
+Até aqui usamos o Context API na mudança do tema, na parte de autenticação e, recentemente, no carrinho, adicionando nossos produtos em uma lista. Entretanto, a grande vantagem de usar o Context API é termos várias telas e componentes, mas acessarmos nossos estados independentemente de passagem de parâmetros via props. Então podemos acessar globalmente esses estados.
+Para exemplificar ainda mais o uso do Context e deixar nosso aplicativo mais próximo do e-commerce final, neste vídeo criaremos duas telas para nosso aplicativo. Uma delas será a tela de Resumo, onde estarão listados os produtos que adicionamos no carrinho, e a outra é a tela de Finalizar compra, para podermos ver os nossos dados e finalizar a compra.
+
+Antes de começarmos a escrever os códigos, vejamos o que essas telas precisarão ter, a partir da captura dessas telas. Começaremos analisando a tela de Resumo, que é bem parecida com a tela Principal, tendo a saudação no canto superior esquerdo e os ícones do carrinho e da engrenagem no canto superior direito.
+
+Ela tem os produtos, mas apenas os que estão no carrinho. Além disso, diferentemente da Principal, não temos os "Últimos vistos" e o card do produto não tem o botão <+>. Isso porque, na regra de negócios desse aplicativo, optamos por permitir que os itens só sejam adicionados no carrinho a partir da tela principal.
+
+Então a tela de Resumo tem apenas lista os produtos que já estão no carrinho, por isso os cards não têm o botão <+>. Por fim, ela tem o botão "Finalizar" na parte inferior, por onde navegaremos para tela de finalizar.
+
+A tela de finalizar, neste vídeo, deixaremos praticamente vazia. Ela terá apenas um botão centralizado na tela escrito "Finalizar", que terá a função de finalizar a compra.
+
+Vamos começar a construir as duas telas. Como observamos, a tela "Resumo" é muito parecida com a tela "Principal", então, na coluna da esquerda, acessaremos "src > telas > Principal". Copiaremos a pasta "Principal e, para isso, clicamos na pasta, pressionamos "Ctrl + C" e, em seguida, "Ctrl + V".
+
+Depois, clicamos com o botão direito em cima da "Principal copy" e, no menu flutuante, escolhemos a opção "Renomear". Renomearemos a pasta para "Resumo".
+
+Agora vamos abrir o "index.js" da pasta "Resumo" e retirar algumas informações, porque essa tela tem menos itens que a "Principal". Por exemplo, os ultimosVistos não aparecem na tela de Resumo, então podemos removê-lo. Para isso, apagaremos o ListHeaderComponent={} da nossa FlatList, ou seja, deletaremos da linha 53 à linha 69.
+
+Também não exibiremos os produtos na nossa FlatList, exibiremos o carrinho, que já está globalmente visível graças ao ProdutosContext. Então, na importação, como não exibiremos os ultimosVistos, vamos substituir, por carrinho.
+
+const {
+    quantidade
+    carrinho
+} = useContext(ProdutosContext)COPIAR CÓDIGO
+Conseguimos acessar o carrinho, que será um vetor de objetos, porque listaremos os produtos que estão no carrinho. Sendo assim, na FlatList, substituiremos o data={produtos} por data={carrinho}.
+
+Também mudaremos o nome da função de Principal para Resumo, ou seja, export default function Resumo({navigation}) { , já que é a tela de Resumo. Entretanto, para podemos acessar essa tela, é necessário incluí-la nas nossas "rotas.js".
+
+Nesse caso vamos acessar "src > rotas.js" e, antes da function Rotas() faremos a importação dessa tela. Além disso, precisamos fazer o Tab.Screen dessa tela. Podemos copiar a Tab.Screen da "Configurações", colar na linha de baixo e substituir todos os campos em que está escrito "Configurações" por "Resumo".
+
+//Trecho de código suprimido
+
+import Resumo from './telas/Resumo';
+
+export default function Rotas() {
+    return (
+        <NavigationContainer>
+            <Tab.Navigator>
+                <Tab.Screen name="Login" component={Login} options={{ headerShow: false }}/>
+                <Tab.Screen name="Principal" component={Principal} options={{ headerShow: false }}/>
+                <Tab.Screen name="Configurações" component={Configuracao} options={{ headerTitleAlign: 'center' }}/>
+                <Tab.Screen name="Resumo" component={Resumo} options={{ headerTitleAlign: 'center' }}/>
+            </Tab.Navigator>
+        </NavigationContainer>
+}COPIAR CÓDIGO
+Ao salvarmos, temos um erro na aplicação, mas isso é normal quando mexemos nas nossas rotas. Uma forma bem fácil de solucionar esse problema é abrir o terminal onde a aplicação está rodando, encerra a aplicação e voltar executar o código. Além disso, no emulador, encerraremos o aplicativo e abriremos novamente.
+
+Nossa aplicação voltou a rodar normalmente, então faremos o login, digitando o e-mail e senha cadastrados e clicando em "Entrar". Agora precisamos determinar uma forma para acessar a tela de Resumo.
+
+Uma forma interessante é, ao clicarmos no ícone de carrinho, no canto superior direito da tela Principal, sermos redirecionados para tela de Resumo. Para isso, vamos para navegar para "telas > Principal > index.js".
+
+Percebam que temos um TouchableOpacity em volta do nosso ícone de carrinho, que é o "shopping-cart". Portanto já temos um onPress={} ao clicar no ícone, mas ele está vazio. Vamos usá-lo para navegar entre telas, escrevendo onPress={() => navigation.navigate('Resumo')}. Com isso, passamos a navegação para nossa tela 'Resumo'.
+
+Vamos fazer um teste. No emulador, vamos adicionar o "Tênis bacana" e a "Cadeira de trabalho" no carrinho, clicando no <+> dos cards. Em seguida, vamos clicar no ícone do carrinho, no canto superior direito da tela, o que nos redireciona para tela de resumo.
+
+Essa tela já está bem próxima do que gostaríamos, exibindo os produtos que adicionamos como na imagem de referência que vimos anteriormente. Vou abrir a imagem novamente para conferirmos o que mais precisamos fazer. No modelo temos o botão "Finalizar", na parte inferior da tela, e o botão <+> foi removido dos cards do carrinho.
+
+Começaremos removendo o botão <+>. Para isso abriremos o "index.js" da tela de Resumo. Percebam que na FlatList tem o <Produto item={item} adicionar={true} />. Se mudarmos a informação do atributo adicionar para {false}, o botão <+> já é removido dos cards da tela de Resumo.
+
+Pare entendermos como essa implementação funciona, vamos na coluna da esquerda e acessaremos "src > componentes/Produto > index.js". Nele percebemos que o TouchableOpacity do botão <+> está envolvido por uma variável chamada adicionar.
+
+Essa foi a variável que passamos no Resumo como {true} ou {false}. Então se adicionar for true, o botão é exibido, se for false, ele não é exibido. Dessa forma que removemos o botão do nosso componente. Feito isso, falta criarmos o botão na parte inferior da tela de Resumo para sermos direcionados para tela "Finalizar".
+
+Para criar esse botão, voltaremos para o "index.js" da pasta "Resumo" e criaremos um <TouchableOpacity> dentro da <View>. Dentro dele colocaremos um <Text>Finalizar</Text>. Agora daremos um estilo para o nosso botão. No TouchableOpacity vamos adicionar o style={estilo.botao} e no Text adicionaremos o style={estilo.botaoTexto}.
+
+<TouchableOpacity style={estilo.botao}>
+    <Text style={estilo.botaoTexto>Finalizar</Text>
+</TouchableOpacity>COPIAR CÓDIGO
+Vamos salvar e, mesmo não sendo muito visível, está escrito "Finalizar" na parte inferior da tela "Resumo", mas ele não está estilizado. Para estilizarmos, vamos mexer nos "estilos.js".
+
+Antes disso, percebam que, na linha 3 do "index.js", temos o import { produtos }, mas não estamos utilizando, portanto vamos removê-lo. Em seguida, podemos apagar o arquivo "produtos.js" da pasta "Resumo", porque não usaremos ele nesta tela. Com isso, deixamos nossa aplicação um pouco mais limpa.
+
+Agora abriremos o "estilos.js" da pasta "Resumo" e navegaremos para o final do código para adicionarmos o estilo do botão.
+
+//Trecho de código suprimido
+
+    botao: {
+        margin: 16,
+        marginBottom: 32,
+        paddingVertical: 16,
+        borderRadius: 10,
+        backgroundColor: tema.botao,
+    },
+    botaoTexto: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: tema.preto,
+        textAlign: 'center',
+    },
+});COPIAR CÓDIGO
+Percebam que o botao tem alguns atributos para visualizarmos melhor, como as margens e o padd07ing, que estão em CSS para o nosso botão ficar parecido com o mockup. Também o estilo para o texto, com o tamanho da fonte, a espessura da letra a cor e o alinhamento.
+
+Salvaremos e percebam que o botão está parecido com o que gostaríamos, mas está pequeno. Para ele ocupar a tela inteira, como o tamanho do card, teremos que alterar os estilos do nosso container. Na linha 10 do "estilos.js", mudaremos o alinhamento de 'center' para alignItems: 'strech',.
+
+Vamos salvar novamente e, com isso, percebemos que temos o botão desejado na nossa tela de "Resumo" do aplicativo. Com o tempo vocês terão mais prática em programar e estilizar os seus componentes com CSS. Neste caso, estilizamos para ficar bem próximo do que tínhamos na tela de referência para replicarmos no app.
+
+Agora criaremos nossa tela "Finalizar". A tela de Finalizar será parecida com a de Resumo, mas sem os cards, sem a saudação no canto superior esquerdo e sem os ícones do canto superior direito
+
+Então, na coluna da esquerda, vamos copiar a pasta "Resumo", com "Ctrl + C", e colar, com "Ctrl + V". Depois alteraremos o nome de "Resumo copy" para "Finalizar". Também podemos deixar aberto apenas o "index.js" da pasta "Finalizar", fechando os demais arquivos abertos.
+
+Dentro do "index.js" da pasta "Finalizar", vamos alterar o nome da função para export default function Finalizar({navigation}) {. Em seguida, removeremos da linha 31 a 44, que é a parte do título que exibe a saudação e os ícones. Também podemos remover a FlatList com o data={carrinho}, deixando apenas o botão.
+
+//Trecho de código suprimido
+
+export default function Finalizar({navigation}) {
+
+    const {
+        temaEscolhido
+    } = useContext(TemaContext)
+
+    const {
+        usuario
+    } = useContext(AutenticacaoContext)
+
+    const {
+        quantidade,
+        carrinho
+    } = useContext(ProdutosContext)
+
+    return (
+        <View style={estilo.container}>
+            <StatusBar />
+
+            <TouchableOpacity style={estilo.botao}>
+                <Text style={estilo.botaoTexto>Finalizar</Text>
+            </TouchableOpacity>
+
+        </View>
+    );
+}COPIAR CÓDIGO
+Para conseguirmos importar nossa tela, acessaremos o arquivo "rotas.js" na coluna da esquerda. Nele vamos importar nossa tela escrevendo import Finalizar from './telas/Finalizar';. Além disso, criaremos o Tab.Screen para navegarmos para essa tela.
+
+Então vamos copiar o Tab.Screen do Resumo e colar na linha de baixo. Em seguida, substituiremos todos os lugares em que tem Resumo por Finalizar
+
+//Trecho de código suprimido
+
+import Finalizar from './telas/Finalizar';
+
+export default function Rotas() {
+    return (
+        <NavigationContainer>
+            <Tab.Navigator>
+                <Tab.Screen name="Login" component={Login} options={{ headerShow: false }}/>
+                <Tab.Screen name="Principal" component={Principal} options={{ headerShow: false }}/>
+                <Tab.Screen name="Configurações" component={Configuracao} options={{ headerTitleAlign: 'center' }}/>
+                <Tab.Screen name="Resumo" component={Resumo} options={{ headerTitleAlign: 'center' }}/>
+                <Tab.Screen name="Finalizar" component={Finalizar} options={{ headerTitleAlign: 'center' }}/>
+            </Tab.Navigator>
+        </NavigationContainer>
+}COPIAR CÓDIGO
+Novamente teremos um erro por termos alterado as Rotas(), então vamos encerrar a aplicação no terminal e depois executá-la de novo. Também encerraremos a aplicação no emulador e depois abriremos mais uma vez.
+
+Feito isso, para acessarmos a tela "Finalizar", voltaremos para o "index"js" da pasta "Resumo". No botão que criamos nesta tela, colocaremos um onPress={} para navegarmos para tela "Finalizar".
+
+Para facilitar a visualização, quebraremos a linha após o style={estilo.botao} e escreveremos onPress={() => navigation.navigate('Finalizar')}. Então fizemos uma arrow function passando a navegação para tela "Finalizar".
+
+//Trecho de código suprimido
+
+<TouchableOpacity style={estilo.botao}
+    onPress={() => navigation.navigate('Finalizar')
+>
+    <Text style={estilo.botaoTexto>Finalizar</Text>
+</TouchableOpacity>COPIAR CÓDIGO
+Salvaremos e vamos testar se nossa aplicação funciona. No emulador, faremos o login passando o e-mail e senha registrados. Em seguida vamos adicionar uns produtos no carrinho, como uma "Mesa chique", uma "Camisa bonita" e uma "Cadeira de trabalho".
+
+Clicando no ícone de carrinho, no canto superior direito da aplicação, somos direcionados para tela de Resumo. Vemos que está funcionando, já que exibe os produtos adicionados.
+
+Vamos voltar para tela Principal para fazer um teste. Adicionaremos um "Tênis bacana" e agora temos quatro produtos no carrinho. Ao clicarmos no ícone do carrinho novamente, percebemos que a lista da tela de Resumo foi atualizada.
+
+Não passamos isso via props, e sim através do Context API que está na tela. Se analisarmos o "index.js" da tela de Resumo, na linha 23 temos a importação das variáveis usando o ProdutosContext, que criamos nos vídeos anteriores.
+
+Na aplicação, ao clicarmos no botão "Finalizar", na parte inferior da tela de resumo, somos direcionados para tela "Finalizar" que, atualmente, é só um botão. Nosso objetivo é que, ao clicarmos no botão da tela "Finalizar", sejamos direcionados para tela Principal.
+
+Para fazermos isso e finalizarmos esse vídeo, vamos voltar para o "index.js" da tela Finalizar e, no TouchableOpacity do botão um onPress={} criando uma arrow function com o navigation.navigate(), passando a ('Principal') como parâmetro.
+
+//Trecho de código suprimido
+
+<TouchableOpacity style={estilo.botao}
+    onPress={() => navigation.navigate('Principal')}
+>
+    <Text style={estilo.botaoTexto>Finalizar</Text>
+</TouchableOpacity>COPIAR CÓDIGO
+Agora se, na nossa aplicação, clicarmos no botão "Finalizar" da tela Finalizar, voltamos para tela Principal.
+
+Neste vídeo criamos mais duas telas, aproveitando códigos de telas anteriores. Assim, observamos que conseguimos acessar a tela de carrinho utilizando apenas o Context API, sem precisar passar via props.
+
+Nos próximos vídeos aprenderemos mais sobre o Context e veremos algumas curiosidades. Se repararem, o nosso Context por si só, não está persistindo os dados. Isso significa que, se reiniciarmos a aplicação, tudo que está na lista de carrinho será perdido.
+
+Vamos fazer um teste rápido. No terminal do VS Code, vamos reiniciar nossa aplicação. No emulador, faremos o login novamente. Ao entrarmos na aplicação, os quatro produtos que tínhamos adicionados foram perdidos.
+
+Isso acontece porque o Context API é uma variável global, ou seja, enquanto a aplicação está rodando, os dados ficam salvos na variável. Contudo, quando a aplicação é reiniciada, por exemplo, se a pessoa fechar o aplicativo e abrir novamente, os dados são perdidos, porque a variável só roda enquanto o aplicativo está sendo executado.
+
+Então faremos com que, mesmo fechando e abrindo o aplicativo, o usuário recupere os dados que tinha colocado anteriormente no carrinho.
+
+Nos vemos na próxima aula.
+
+@@05
+Faça como eu fiz: tela de resumo e finalizar
+
+Mais duas telas foram criadas na nossa aplicação: a tela de Resumo e a tela de Finalizar. E que tal testarmos o que aprendemos colocando a mão no código?
+A tela de Resumo é bem semelhante a tela Principal, exceto a parte dos últimos vistos e o botão de "+" que não deve aparecer nos Cards dos produtos. Essa tela também possui um botão para navegar para a tela de Finalizar. Já a tela de Finalizar é bem simples, por enquanto, possuindo apenas um botão de finalizar a compra.
+
+Então, siga o seguintes passos:
+
+Crie a pasta de Resumo;
+Faça as alterações de informações necessárias;
+Ajuste as rotas;
+Faça o redirecionamento do ícone do carrinho para a tela de resumo e remova o botão “+”;
+Adicione o botão “Finalizar”;
+Crie a tela de finalizar e faça o redirecionamento.
+Lembre-se de que sempre que criar uma tela, devemos adicioná-la nas rotas. Caso sua aplicação "quebre" nesse processo, reinicie a aplicação no terminal e o problema será resolvido.
+
+Precisando de ajuda, pergunte no fórum para que possamos te ajudar!
+
+Bons estudos ;)
+
+Aqui nosso desafio era criar mais duas telas no nosso projeto. Essas telas possuem estruturas semelhantes às telas que já haviam no projeto base. Assim, fizemos a importação das duas telas criadas no nosso arquivo de rotas para que pudéssemos navegar até elas.
+Se quiser dar uma conferida na forma que foi implementada, dê uma olhadinha nesse repositório do Github.
+
+https://github.com/alura-cursos/react-native-context-api/tree/fbb835c7976cbb13ad34c6e38dc1f36bd98cc758
+
+@@06
+Informações armazenadas
+
+Conseguimos usar o Context API no nosso aplicativo em três situações diferentes:
+Mudança do tema;
+Autenticação, no Login;
+Carrinho, criando uma lista de produtos.
+Entretanto, reparem uma coisa. Simularemos uma pessoa usando nosso e-commerce. Abriremos a tela de Login, colocaremos nosso e-mail e senha para realizarmos o login, pressionamos o botão "Entrar" e passamos para tela de produtos.
+
+Na tela de Produtos, clicaremos na engrenagem no canto superior direito para sermos direcionados para tela de Configuração, onde vamos alterar o tema do nosso aplicativo de escuro para claro, clicando no switch. Voltaremos para tela de produtos e adicionaremos alguns produtos na nossa lista de compras. Vou colocar uma "Mesa chique" e uma "Cadeira de trabalho".
+
+Agora temos dois itens no carrinho. Se clicarmos no ícone do carrinho no canto superior direito, vamos para tela de Resumo, onde tem uma "Mesa chique" e uma "Cadeira de trabalho".
+
+Entretanto, vamos supor que, sem querer, fechamos o aplicativo no celular. Então vamos para tela de aplicativos abertos e encerraremos o nosso e-commerce, simulando o fechamento do app. Agora abriremos novamente para adicionar mais itens no carrinho, mas uma coisa estranha já aconteceu. Voltamos para tela de Login e ela não está mais no tema claro.
+
+Vamos fazer o login novamente e, ao entrarmos na tela de produto, reparamos que o carrinho foi esvaziado. Se clicarmos no ícone do carrinho, confirmamos que não há nenhum produto listado.
+
+O Context API, por si só, deixa os estados de forma global na aplicação, mas não persiste os dados, como notamos no nosso teste. Existem várias formas de conseguirmos persistir os dados, algumas delas já até foram vistas em cursos anteriores da formação React Native. Uma dessas formas é o armazenamento local.
+
+Por exemplo, poderíamos armazenar localmente a mudança do tema, assim, quando o aplicativo for iniciado, ele verifica qual era o último tema da aplicação. No caso, era o tema claro, então ele restauraria para o tema claro. Para os produtos no carrinho, até poderíamos usar o Async Storage, mas imaginem a seguinte situação.
+
+Vamos supor que meu celular estragou e não liga mais, então usarei o celular de outra pessoa, entrando no mesmo aplicativo e logando com a minha conta. Seria interessante aparecer a lista de carrinho que eu fiz no meu celular. Todavia, se usarmos o Async Storage, a lista do carrinho ficará armazenado apenas no antigo dispositivo, e não no que peguei emprestado do meu amigo.
+
+Uma forma de restaurarmos o que estava no carrinho em outros dispositivos é usando a Web API. Usaremos essas duas formas para complementarmos o Context que implementamos na nossa aplicação, persistindo as informações.
+
+Veremos isso na próxima aula.
+
+@@07
+O que aprendemos?
+
+Nesta aula, aprendemos a:
+Usar o Context API para adicionar os produtos no carrinho;
+Implementar o Set para adicionar elementos únicos no vetor de últimos vistos, considerando que, diferente do carrinho, os últimos vistos não devem exibir o mesmo produto mais de uma vez.
+Agora já temos uma aplicação bem mais completa, não é mesmo?
+
+Se você chegou até aqui, meus parabéns! Continue assim!
+
+Não esqueça de visitar o nosso fórum. Veja e ajude em questões levantadas por outros alunos, compartilhe algo e, caso tenha dúvidas, podemos ajudar você por lá.
