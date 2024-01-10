@@ -2,6 +2,17 @@
 
 Curso de React Native: utilizando o Context API nas suas aplicações
 
+```
+ npm install -g json server
+ npm install json-server@alpha
+ npm fund
+ npm audit fix
+json-server db.json
+json-server --watch --host 192.168.178.24 db.json
+npm start
+touch db.json
+```
+
 @01-Definição do Context API 
 
 @@01
@@ -1658,3 +1669,468 @@ Agora já temos uma aplicação bem mais completa, não é mesmo?
 Se você chegou até aqui, meus parabéns! Continue assim!
 
 Não esqueça de visitar o nosso fórum. Veja e ajude em questões levantadas por outros alunos, compartilhe algo e, caso tenha dúvidas, podemos ajudar você por lá.
+
+#### 10/01/2024
+
+@05-Persistindo os dados no App
+
+@@01
+Projeto da aula anterior
+
+Caso queira começar o curso a partir desta aula, você pode baixar o projeto da aula anterior, clicando aqui
+
+https://github.com/alura-cursos/react-native-context-api/tree/fbb835c7976cbb13ad34c6e38dc1f36bd98cc758
+
+@@02
+Salvando o tema no AsyncStorage
+
+Vimos que o Context API, por si próprio, não guarda uma informação caso a aplicação seja reiniciada. Isso porque o Context API deixa globalmente visível alguns estados, que são variáveis e funções.
+Sendo assim, ele funciona como uma variável comum, mas que pode ser acessado em qualquer tela ou componente. Enquanto a aplicação estiver aberta e funcionando, os estados estarão armazenando a informação, mas caso o app seja reiniciado, ele limpa o que estava nesses estados.
+
+Descobrimos que uma das maneiras de resolver isso é usando o AsyncStorage, que é o armazenamento local, ou uma Web API. No caso do tema, é mais simples salvarmos isso no dispositivo. Uma forma de fazer isso é usando a biblioteca do AsyncStorage.
+
+Na coluna da esquerda, vamos acessar "src > contexts > TelaContext.js" e importar o AsyncStorage para guardarmos essa informação. Para isso, no começo do código, escreveremos import AsyncStorage from '@react-native-async-storage/async-storage.
+
+Além de importado, o AsyncStorage precisa ser instalado na aplicação. Para sabermos se ele foi instalado, abrimos o "package.json", na coluna da esquerda, e confirmaremos se ele está nos "dependencies" do projeto.
+
+Se não estiver instalado, abriremos o terminal e digitaremos npm i @react6-native-async-storage/async-storage. Ao pressionarmos "Enter", ele irá instalar o Async Storage no nosso projeto. No meu caso, ele já estava instalado, então nem precisava.
+
+Feito isso, precisaremos armazenar o temaAtual, que é uma string. Sabendo qual string que foi armazenada por último, podemos pegá-la do Async Storage quando o aplicativo iniciar e restaurar o tema. Para isso, vamos criar uma função para salvar essa informação localmente.
+
+Chamaremos de function salvarTemaNoDispositivo(){} e passaremos o (tema) como parâmetro. Dentro dessa função, tanto salvaremos no Async Storage, quanto configuraremos para salvar na variável temaAtual.
+
+Então começaremos escrevendo AsyncStorage.setItem(''), onde passaremos uma chave, para posteriormente termos acesso ao valor que foi salvo, e o tema que recebermos como parâmetro na função. Com isso teremos ('@tema', tema). Em seguida, usaremos o setTemaAtual(tema) para salvar o tema.
+
+function salvarTemaNoDispositivo(tema){
+    AsyncStorage.setItem('@tema', tema)
+    setTemaAtual(tema)
+}COPIAR CÓDIGO
+Lembrando que, como queremos salvar localmente, mas não é uma informação local, precisamos esperar que essa informação seja salva. Para isso, vamos usar um conceito que já vimos em cursos anteriores que é o await, que espera uma ação ser finalizada. Então await AsyncStorage.setItem('@tema', tema).
+
+Contudo, para usarmos o await, a função precisa ser assíncrona. Para isso, escrevemos async antes da função, ou seja, async function salvarTemaNoDispositivo(tema){}.
+
+Precisaremos resgatar essa informação quando o aplicativo for iniciado. Uma forma de fazermos isso é usando o Hook useEffect(), que é carregado quando o aplicativo é iniciado. Então pegaremos essa informação e configuraremos toda a aplicação para o tema que estava salvo quando o app fechou.
+
+Portanto vamos escrever useEffect(() => {}, []), deixando os [] vazios no final para ele entender que só precisa carregar uma única vez. Dentro dessa arrow function, carregaremos o valor que está no AsyncStorage em uma variável, que vamos chamar de temaSalvo. Atribuiremos o AsyncStorage.getItem('@tema') a essa variável, passando a chave que criamos.
+
+Para pegar essa informação que está salva, temos que esperar que essa informação chegue até nós, ou seja, usaremos o await na frente do Async Storage. Além disso, transformaremos a arrow function em async, escrevendo async () => {}.
+
+Além disso, vamos fazer um if para verificar se tem algo dentro do temaSalvo, porque essa variável pode ainda não existir dentro do nosso dispositivo. Caso exista, faremos um setTemaAtual(), passando o (temaSalvo). Isso fará com que a nossa aplicação já seja carregada com o tema que estava antes do aplicativo fechar.
+
+//Trecho de código suprimido
+
+useEffect(async () => {
+    const temaSalvo = await AsyncStorage.getItem('@tema')
+}, [])
+
+async function salvarTemaNoDispositivo(tema){
+    await AsyncStorage.setItem('@tema', tema)
+    setTemaAtual(tema)
+}COPIAR CÓDIGO
+No emulador, o aplicativo apresentará um erro, porque estamos usando o useEffect, mas importamos da biblioteca errado. Nossa importação deve ser apenas import { useEffect } from 'react'. Agora precisamos passar a função salvarTemaNoDispositivo para o nosso .Provider, assim conseguiremos acessá-la de outras telas, no caso, da tela de Configuração.
+
+Vamos navegar para "telas > Configuracao > index.js" e, onde importamos as variáveis do useContext(TemaContext), vamos adicionar a salvarTemaNoDispositivo. Também quebraremos as linhas para a visualização ficar mais fácil.
+
+//Trecho de código suprimido
+
+const {
+    temaAtual,
+    setTemaAtual,
+    temaEscolhido,
+    salvarTemaNoDispositivo
+} = useContext(TemaContext)COPIAR CÓDIGO
+No switch, ao invés de salvarmos o tema no setTemaAtual, que fica apenas no código, vamos usar a função salvarTemaNoDispositivo, porque com ela já salva também no temaAtual. Então ambos são salvos simultaneamente.
+
+<Switch
+    onValueChange={() =>
+    temaAtual === 'escuro' ?
+    salvarTemaNoDispositivo('claro') :
+    salvarTemaNoDispositivo('escuro')
+}
+    value={temaAtual === 'escuro' ? true : false}
+/>COPIAR CÓDIGO
+Vamos testar se funcionou. Logaremos na aplicação com o e-mail e senha cadastrados, em seguida clicaremos na engrenagem no canto superior direito para acessar a tela de Configurações e clicaremos no switch para alterar para o tema claro. Feito isso, vamos reiniciar a aplicação para descobrir se continuará salvo no tema claro.
+
+Para isso, abriremos o terminal que está rodando a aplicação e pressionaremos "r", para ele recarregar o aplicativo. Percebemos que a tela de Login, no emulador, foi recarregada com o tema claro. Podemos também encerrar todas as aplicações do emulador e abrir nosso app novamente. Notamos que, mesmo assim, o tema continua como claro.
+
+Faremos um novo login, acessaremos a tela de Configurações mais uma vez e voltaremos para o tema escuro. Ao recarregarmos a aplicação novamente, pressionando "r" no terminal de onde a aplicação está rodando, veremos que a tela de login recarregou no tema escuro.
+
+Essa foi uma das maneiras de resolver o problema do Context, ou seja, de guardar a informação para o caso de a aplicação ser reiniciada. Todavia esse não é um método útil para a lista de carrinho, porque se acessarmos esse app de outro dispositivo, não conseguiremos acessar essa lista.
+
+Como o tema é uma coisa simples, uma aplicação real costuma salvar localmente a informação do tema. Claramente existem outros métodos, mas neste caso o método atende muito bem e foi relativamente simples de implementar.
+
+@@03
+Faça como eu fiz: salvando o tema no AsyncStorage
+
+Nessa aula, aplicamos a persistência do tema usando o AsyncStorage. Vamos colocar isso em prática? Então, é necessário seguir os passos abaixo:
+Verifique se você já tem o AsyncStorage;
+Faça a programação para salvar o tema.
+Precisando de ajuda, pergunte para a gente no fórum para que possamos ajudar você!
+
+Bons estudos ;)
+
+O objetivo dessa atividade é que você consiga salvar o tema da sua aplicação no AsyncStorage.
+Então, a primeira coisa que precisa ser feita é verificar se o AsyncStorage já está instalado em seu projeto, caso não, abra o terminal e digite:
+
+npm install @react-native-async-storage/async-storageCOPIAR CÓDIGO
+Depois você precisará usar a lógica e criar funções para salvar o tema usando o setItem e getItem.
+
+Se quiser dar uma conferida na forma que foi implementada, dê uma olhadinha nesse repositório do Github.
+
+https://github.com/alura-cursos/react-native-context-api/tree/b2ba3909ece4e1c0ecfd746f34f249a3f36de419
+
+@@04
+Criando uma Web API
+
+Conseguimos resolver o problema do tema no nosso aplicativo que, ao ser reiniciado, abre com o tema que estava anteriormente. Entretanto, não é tão viável usarmos o AsyncStorage para fazermos o mesmo com os itens do carrinho.
+Até funcionaria, porém, imaginando que esse aplicativo se torne público e as pessoas comecem a usá-lo, esta não seria uma boa prática. Por exemplo, se a pessoa estivesse fazendo uma lista de compras no carrinho e a bateria do aplicativo acabe. Imaginando que ela pegue outro dispositivo emprestado e entre na conta dela, a lista de carrinho não apareceria.
+
+Isso porque o Async Storage armazena apenas no dispositivo, então se precisarmos abrir o aplicativo em outro dispositivo, a lista não será recuperada. Por isso não é recomendado salvarmos essa lista internamente.
+
+Sendo assim, uma das maneiras recomendadas para fazermos isso é salvando em um banco de dados, e podemos fazer isso usando uma Web API. Então, neste vídeo, usaremos uma Web API para salvar a lista do carrinho.
+
+A partir de agora é interessante que já tenham visto o curso React Native: utilizando Web API, porque usaremos conceitos daquele curso aqui. Eu não explicarei aprofundadamente cada conceito, vou apenas utilizá-los. Por isso recomendo fortemente que assistam o outro curso antes de prosseguirem.
+
+A primeira coisa que faremos será criar uma Fake API para simular uma Web API no nosso aplicativo. Para isso, usaremos o Jason Server, que é uma biblioteca que nos permite criar uma Web API de uma maneira mais simples e que rodará no nosso próprio computador. Então vamos simular uma Web API, que funcionaria online, no nosso dispositivo.
+
+Primeiro, prepararemos nosso ambiente do VS Code. Na coluna da esquerda, passaremos o mouse sobre o lado direito da primeira linha, que é a "REACT-NATIVE-CONTEXT-API". Surgirá quatro ícones com opções e vamos clicar no último, no lado extremo direito, para minimizar todas as pastas. Em seguida, fecharemos todas as abas de códigos abertas.
+
+Para criarmos um Jason Server, precisamos instalá-lo no nosso computador primeiro. Eu deixarei um pequeno tutorial de como fazer essa instalação por meio de uma atividade. Caso já tenham visto o curso de React Native: utilizando Web API, provavelmente ele já está instalado na sua máquina.
+
+Feita a instalação, abriremos um terminal que não está rodando a nossa aplicação e, depois, criaremos um arquivo na coluna da esquerda. Já que iremos apenas testar, podemos criar esse arquivo no nosso projeto, porque ficará mais visível e fácil de acessarmos. Entretanto, se quiserem criar em uma pasta a parte, em um local diferente da aplicação, também funciona.
+
+Chamaremos o novo arquivo de "db.json". Ele será nosso banco de dados, ou seja, onde armazenaremos nossas informações. Nesse arquivo, escreveremos {"produtos": []} e quebraremos as linhas para deixar mais organizado.
+
+{
+    "produtos": [
+
+    ]
+}COPIAR CÓDIGO
+Em seguida, no nosso terminal, escreveremos "json-server-db.json" e pressionaremos "Enter". Com isso, ele passa a funcionar e recebemos o endereço da nossa Fake API, que é o http://localhost:3000/produtos, por onde acessaremos a nossa rota.
+
+Faremos esse teste, abrindo esse link no nosso navegador. Reparamos que temos o retorno do banco de dados, que está vazio, porque ainda não adicionamos nada.
+
+Contudo não é interessante rodarmos a Fake API como localhost, porque precisamos do endereço IP da máquina para acessar uma Web API de dentro do dispositivo. Uma forma de descobrirmos esse endereço IP é abrindo o Expo. O endereço IP estará acima do QR Code, que fica na parte inferior do "Metro Bundler", ou seja, da coluna da esquerda.
+
+No meu caso, o IP é 192.168.15.43. Lembrem-se que precisa ser o endereço da máquina de vocês, e não o da minha, que é esse que eu passei. Dito isso, vou copiar o meu IP e minimizar o Expo.
+
+Voltando ao terminal do VS Code, ao invés de rodarmos o "json-server db.json", escreveremos "json-server --watch --host nº do endereço IP db.json". Então o meu ficou "json-server --watch --host 192.168.15.43 db.json".
+
+Em seguida, pressionamos "Enter" e ele vai executar da mesma forma, porém o endereção não é mais com "localhost", e sim com o IP. No caso, o meu é http://192.168.15.43:3000.
+
+Quando eu abro esse link no meu navegador, ele mostra o banco de dados vazio, como antes. Agora vamos passar alguma informação para o nossa API e testarmos se está funcionando.
+
+Para isso, navegaremos para "src > telas > Principal > produtos.js" e copiaremos um dos itens da nossa const produtos. Depois voltaremos para o nosso "db.json" e vamos colar esse item dentro da nossa lista, lembrando que precisamos passar as propriedades do item entre "".
+
+{
+    "produtos": [
+        {
+            "imagem": "imagemTenis",
+            "texto": "Tenis bacana",
+            "preco": 100.00
+        }
+    ]
+}COPIAR CÓDIGO
+Salvamos e voltamos para o navegador. Recarregando a página com o endereço do banco de dados, temos o retorno das informações que passamos. Portanto nossa Fake API já está rodando e funcionando.
+
+No próximo vídeo, integraremos a Fake API à nossa aplicação, igual fizemos no curso de React Native: utilizando Web API. Isso permitirá que salvemos os itens nela e, caso reiniciemos o aplicativo, ele recuperará as informações.
+
+Então será um tipo de banco de dados para o caso do app fechar e precisar resgatar essas informações. Nos vemos no próximo vídeo.
+
+@@05
+Preparando o ambiente: instalando o json-server
+
+Nesta aula, falamos do json-server, que é necessário para criar uma Fake API. Para que você possa utilizá-lo, é necessário que o tenha instalado na sua máquina.
+Para isso, abra o terminal e digite o comando de instalação que se encontra no github oficial do json-server.
+
+Atenção: lembre-se de usar o comando sudo na frente do “npm install” para que o json-server baixe corretamente.
+
+A documentação do json-server também se encontra nesse github, aproveite para entender melhor como ela funciona e o que ela é capaz de fazer.
+
+https://github.com/typicode/json-server#getting-started
+
+@@06
+Salvando na Web API
+
+Criamos nossa Web API e testamos no nosso navegador, agora falta a integramos no nosso projeto. Vamos fazer isso!
+Percebam que, no nosso arquivo "db.json", criamos um objeto apenas para teste, então podemos apagá-lo e, por enquanto, deixar o "produtos" como uma lista vazia. Em seguida, precisamos verificar se nosso projeto já tem o axios instalado.
+
+Na coluna da esquerda, vamos acessar o "package.json" e procurar pelo "axios". No nosso caso, ele está instalado desde o projeto base, mas se estiverem trabalhando em um projeto que não tenha o axios, basta abrirem o terminal e digitar "npm install axios" para instalá-lo no projeto de vocês.
+
+Como o axios já está instalado, vamos fazer a comunicação com a Web API. Dentro de "src", criaremos uma pasta chamada "servicos" e, dentro dela, criaremos um arquivo chamado "api.js". Então a navegação será "src > servicos > api.js".
+
+Neste arquivo vamos, de fato, fazer a conexão com a Web API. Para isso, vamos importar o axios e, em seguida, escreveremos a variável const api = axios.create(), onde criaremos essa conexão.
+
+Dentro dos parâmetros do .create(), abriremos chaves e digitaremos baseURL: e passaremos a URL da nossa Web API. Lembrem-se que não podemos usar o "localhost" aqui, porque queremos acessá-la do nosso emulador ou dispositivo físico. Sendo assim, precisamos colocar o endereços IP do nosso computador.
+
+Para saber o endereço IP, basta abrirmos o navegado onde o Expo está rodando. Vamos copiar o endereço IP, que está acima do QR Code, ou seja, na parte inferior da coluna da esquerda e voltar para o "api.js".
+
+No baseURL, passaremos o endereço da Web API com o IP e a porta "3000", que é onde está rodando nossa Web API. Por fim, exportaremos esta API que criamos.
+
+import axios from "axios";
+
+const api = axios.create({
+    baseURL: "http://192.168.15.43:3000"
+})
+
+export default api;COPIAR CÓDIGO
+Dica: Caso tenham ficado com dúvidas sobre o que fizemos, é recomendado que assistam o curso React Native: utilizando Web API, onde essa exportação é explicada mais passo a passo e vocês poderão entender melhor o que acabamos de fazer.
+Dito isso, precisaremos de duas funções para nos comunicarmos com a nossa Web API: uma para salvar o produto que estamos enviando para o carrinho e outra para recuperar a lista de produtos do carrinho quando o aplicativo reiniciar.
+
+Para mantermos a boa prática, dentro da pasta "servicos", criaremos uma nova pasta chamada "requisicoes", onde faremos as requisições para nossa Web API. Nesta pasta, criaremos um arquivo chamado "produtos.js", que irá conter as requisições para os produtos.
+
+No "produtos.js", importaremos a nossa API, com import api from "../api";, que é a API que criamos agora. Em seguida, criaremos nossas funções, que precisarão ser assíncronas, já que se comunicarão com uma Web API.
+
+A primeira função que criaremos será a export async function salvarProduto(), passando o objeto (produto), que contém as informações do produto que estamos enviando para o carrinho. Dentro da função, faremos um try/catch nos comunicarmos com a Web API.
+
+Nos parâmetros do catch(){}, conteremos um (erro). Caso aconteça algum erro na chamada da API, usamos um console.log(erro), para sabermos o tipo de erro que aconteceu, e retornaremos um objeto vazio, com return {}.
+
+Dentro do try{} faremos uma chamada para Web API. Lembrem-se de que ao fazermos uma chamada para Web API, ela retorna alguma informação, então escreveremos const resultado = await api.post(). O await é para esperarmos a resposta da API e o .post() é um método para salvar uma informação na Web API.
+
+Dentro do post(), precisamos passar nossa rota e o objeto passado por parâmetro para função, ou seja, .post('/produtos', produto);. Depois disso, retornaremos o resultado contendo a informação que salvamos na Web API, com return resultado.data, já que teremos a informação salva no data.
+
+import api from "../api";
+
+export async function salvarProduto(produto){
+    try {
+        const resultado = await api.post('/produto', produto);
+        return resultado.data;
+    }
+    catch(erro){
+        console.log(erro)
+        return {}
+    }
+}COPIAR CÓDIGO
+Salvamos o código e, com isso, temos a nossa primeira função, que salva os produtos. Agora precisamos criar uma função para recuperá-los. Essa função será bastante similar à primeira, então vamos copiar a salvarProduto() e colar abaixo, alterando o nome para pegarProduto().
+
+Não precisamos passar o (produto) como parâmetro da função. Além disso, dentro do try{}, ao invés de usarmos o .post(), usaremos o .get(), chamando apenas a rota API, ou seja, removendo o produto como parâmetro.
+
+No catch(){}, ao invés de retornarmos um objeto vazio, caso ocorra um erro, retornaremos um vetor vazio, ou seja, [], porque, nesta situação, estamos retornando uma lista. Agora temos as duas funções que se comunicarão e farão requisições para Web API.
+
+import api from "../api";
+
+export async function salvarProduto(produto){
+    try {
+        const resultado = await api.post('/produto', produto);
+        return resultado.data;
+    }
+    catch(erro){
+        console.log(erro)
+        return {}
+    }
+}
+
+export async function pegarProduto(){
+    try {
+        const resultado = await api.post('/produto');
+        return resultado.data;
+    }
+    catch(erro){
+        console.log(erro)
+        return []
+    }
+}COPIAR CÓDIGO
+Agora temos que usá-las. Para isso, acessaremos "src > context > ProdutosContext.js". Dentro de "ProdutosContext.js" é onde manipulamos o carrinho, salvando as informações e quantidade de produtos. Então faremos as requisições para API dentro deste arquivo.
+
+Na function viuProduto(){}, salvamos um produto na lista de carrinhos, então será nela que também salvaremos essa informação na Web API. Para isso, criaremos a variável const resultado, lembrando que teremos o resultado que chega da Web API.
+
+Essa variável receberá await salvarProduto(). Em seguida, passaremos o (produto), ou seja, ela receberá o objeto que chega pelos parâmetros da viuProduto(). Por fim, precisamos nos certificar que, na linha 2, a salvarProduto foi importada para o arquivo "ProdutosContext".
+
+import {createContext, useState } from 'react'
+import { salvarProduto } from '../servicos/requisicoes/produtos'
+
+//Trecho de código suprimido
+
+    function viuProduto(produto){
+        set(quantidade+1);
+
+        const resultado = await salvarProduto(produto)
+        let novoCarrinho = carrinho
+        novoCarrinho.push(produto);
+        setCarrinho(novoCarrinho);
+
+//Trecho de código suprimido
+    }COPIAR CÓDIGO
+Como estamos usando o await antes de salvarProduto(), precisamos transformar a viuProduto() em assíncrona, ou seja, async function viuProduto(produto){. Além disso, ao invés de fazermos um novoCarrinho.push(produto), escreveremos .push(resultado).
+
+Isso porque, caso não dê certo usando uma Web API, o .push() salvará um objeto vazio e saberemos que não funcionou. Caso dê certo, o objeto será salvo no novoCarrinho.push() e faremos um setCarrinho() com essa informação.
+
+async function viuProduto(produto){
+    set(quantidade+1);
+
+    const resultado = await salvarProduto(produto)
+    let novoCarrinho = carrinho
+    novoCarrinho.push(resultado);
+    setCarrinho(novoCarrinho);
+
+//Trecho de código suprimidoCOPIAR CÓDIGO
+Precisamos também recuperar essa informação quando o nosso aplicativo reiniciar. Nesse caso, podemos utilizar o useEffect para carregar essa informação uma única vez quando a aplicação for reiniciada.
+
+Então, dentro da ProdutosProvider(), mas antes da viuProduto(), escreveremos um useEffect(() => {}, []), deixando um vetor vazio após a arrow function para ele ser executado apenas uma vez. Precisamos lembrar de importar o {useEffect}. Ele foi importado errado na linha 2, então vamos apagar e importá-lo ao lado do useState.=, já que ele vem do 'react'.
+
+import {createContext, useState, useEffect } from 'react'
+import { salvarProduto } from '../servicos/requisicoes/produtos'
+
+//Trecho de código suprimido
+
+    useEffect(() => {
+
+    }, [])
+
+    async function viuProduto(produto){
+        set(quantidade+1);
+
+        const resultado = await salvarProduto(produto)
+        let novoCarrinho = carrinho
+        novoCarrinho.push(resultado);
+        setCarrinho(novoCarrinho);
+
+//Trecho de código suprimido
+    }COPIAR CÓDIGO
+Feito isso, dentro da arrow function passaremos a função que criamos para pegar produtos, codando const resultado = await pegarProdutos(). Não precisamos passar nenhuma informação como parâmetro.
+
+Em seguida, vamos salvar o resultado nos parâmetros do setCarrinho(), já que o resultado será uma lista de produtos do carrinho. Precisamos também salvar a quantidade de produtos, então vamos escrever setQuantidade(resultado.length), lembrando que .length é o tamanho do vetor. Tivemos um erro, porque o await é usado com uma função assíncrona, então escreveremos useEffect(async () => {.
+
+//Trecho de código suprimido
+
+useEffect(async () => {
+    const resultado = await pegarProdutos();
+    setCarrinho(resultado);
+    setQuantidade(resultado.length)
+}, [])
+
+//Trecho de código suprimidoCOPIAR CÓDIGO
+Agora podemos salvar e testar para descobrirmos se a comunicação com a Web API está ocorrendo como esperado. Vamos deixar o "db.json" aberto para observarmos se o produto está sendo salvo no banco de dados.
+
+No emulador, faremos o login, escrevendo o e-mail e senha registrados, e ao acessarmos na tela Principal, adicionaremos um "Tenis bacana" no carrinho. Percebemos que o objeto do "Tenis bacana" já foi salvo em "produtos": [].
+
+Adicionando uma "Mesa chique" ao carrinho, notamos que um novo objeto surge no "db.json". Ao adicionarmos mais uma "Mesa chique ao carrinho do app, o banco de dados registra dois objetos de "Mesa chique". Agora vamos reiniciar nossa aplicação para descobrirmos se a Web API está mesmo funcionando.
+
+Vamos encerrar todos os aplicativos abertos no emulador e abriremos o nosso app novamente. Após digitarmos o e-mail e senha para fazermos o login, veremos que ainda existem três itens no carrinho.
+
+Ao clicarmos no ícone do carrinho, no canto superior direito, percebemos que o salvamento dos produtos no "db.json" funcionou, assim como a comunicação com a Web API. Portanto, encontramos uma forma de manter a persistência dos dados.
+
+Pensando no motivo para termos escolhido uma Web API, ao invés do Local Storage, vamos acessar nosso aplicativo em outro dispositivo para testarmos se a lista se mantém. Vamos rodar nosso aplicativo em um simulador de Iphone, que é um dispositivo totalmente diferente do Android, mas que funcionará da mesma forma.
+
+Quando o app abre, logamos na aplicação com o mesmo e-mail e senha que registramos. Ao logar, o indicador do carrinho de compras mostra que existem três itens no carrinho. Clicando no carrinho, aparecem os mesmos itens do emulador Android.
+
+Desta forma, vimos que a autenticação é importante, já que verifica qual usuário está acessando, e a Web API é importante para recuperar as informações deste usuário específico. Assim temos as mesmas informações em quaisquer dispositivos.
+
+Portanto, se nosso celular estragar, podemos usar outro dispositivo para continuarmos e finalizarmos nossa compra, sem perder o histórico da nossa lista de carrinho.
+
+No próximo vídeo eu tenho um desafio para vocês e depois encerraremos nosso curso.
+
+@@07
+Faça como eu fiz: salvando na Web API
+
+Nesta aula, vimos que armazenar as informações do carrinho pelo AsyncStorage pode não ser uma opção muito boa, visto que em algumas situações - por exemplo, a perda do celular físico - podem levar a uma perda da lista que tinha sido feita. Uma solução para essa situação foi usar uma Web API.
+Vamos colocar esses aprendizados em prática? Siga os passos:
+
+Verifique a instalação do axios;
+Crie um arquivo para conectar a Web API e as chamadas;
+Configure para salve os itens no carrinho.
+Precisando de ajuda, corre lá no fórum para que possamos ajudar você!
+
+Bons estudos ;)
+
+O objetivo aqui é que você consiga salvar informações da sua aplicação na Web API.
+Para fazer isso, em primeiro lugar precisamos verificar se o axios está instalado em seu projeto, caso não, abra o terminal e digite:
+
+npm install axiosCOPIAR CÓDIGO
+Depois, crie dois arquivos: um para conectar o app à Web API na aplicação e outro para fazer as chamadas para a Web API.
+
+Por fim, utilize a lógica dentro do Context API de produtos para salvar os itens do carrinho na Web API e, consequentemente, resgatar esses produtos caso o aplicativo seja reiniciado.
+
+Se quiser dar uma conferida na forma que foi implementada, dê uma olhadinha nesse repositório do Github.
+
+https://github.com/alura-cursos/react-native-context-api/tree/555599afa18c0167b62b710f69b8b10fa4d56177
+
+@@08
+Tela de finalizar
+
+Praticamente terminamos nosso aplicativo. Falta um detalhe, que vou deixar de desafios para vocês!
+Percebam que, no nosso e-commerce, usamos o Context API para mudança do tema, autenticação e para o carrinho, mas falta a tela de Finalizar compra. Então vamos usar nosso app para simular um e-commerce até mesmo na finalização da compra.
+
+Com o aplicativo aberto no emulador, faremos o login e seremos direcionados para tela Principal. Vamos escolher alguns produtos que temos interesse em comprar. Eu vou escolher um "Tenis bacana", uma "Camisa bonita" e uma "Cadeira de trabalho". Agora tenho três itens no meu carrinho.
+
+Após adicionar os produtos, clicamos no ícone de carrinho, no canto superior direito, e somos direcionados para tela de Resumo, onde está a lista com os produtos que temos interesse em comprar. Vamos finalizar a compra, clicando no botão "Finalizar" na parte inferior dessa tela.
+
+Somos direcionados para última tela, que é a de Finalizar, e aqui surge o meu desafio para vocês. Percebam que, nesta tela, é importante exibirmos algumas informações para o usuário, como as informações de entrega: nome, endereço, e-mail e telefone.
+
+Salvamos essas informações de entrega quando fizemos a autenticação na tela de Login, então podemos pegá-las com o autenticacaoContext para exibir na tela Finalizar. Também é interessante exibir nesta tela informações sobre a quantidade de produtos e o preço total da compra, que é a soma de cada produto do carrinho.
+
+Tela de Finalizar compra. Na parte superior temos uma barra branca onde, no centro, está escrito "Finalizar" e, no canto esquerdo, temos uma pequena seta apontando para esquerda. Abaixo temos a tela no tema ativo. Na parte superior da tela temos um card com o título "Informações de entrega" e os dados do usuário. Abaixo do card temos duas linhas de texto, a primeira diz "Quantidade: 3" e a segunda diz "Preço Total: R$ 330". Na parte inferior da tela, temos um botão "Finalizar", que vai de um extremo a outro da tela.
+
+Não apenas isso, precisamos implementar mais uma função nesta tela, a partir de um Context, para simular a finalização desta compra. O que faremos é, ao clicar no botão "Finalizar", na parte inferior da tela de Finalizar, seremos direcionados para tela principal e limparemos tudo que estava no carrinho, simulando que já compramos os produtos. Também é importante lembrar de apagar esses itens do nosso "db.json", que é o banco de dados da Fake API.
+
+Portanto, quando eu clico no botão "Finalizar", sou direcionado para tela principal, onde é exibido um alerta informando "Compra finalizada com sucesso!" e, ao repararmos o "db.json", ele está vazio. Então as informações foram apagadas. Sendo assim, esse é meu desafio para vocês: fazer a tela de Finalizar e implementar esta função.
+
+A tela de Finalizar que eu mostrei foi uma sugestão, vocês podem exibir as informações da maneira que preferirem. Entretanto, se tiverem interesse em saber como implementei, deixarei o GitHub deste desafio como link para vocês poderem conferir.
+
+Se vocês tiverem dúvida ou quiserem mostrar o que fizeram, postem no fórum! Será legal vermos e ajudar se precisarem.
+
+Aguardo vocês no próximo vídeo.
+
+@@09
+Desafio: criando uma tela de finalizar
+
+Para finalizar a nossa aplicação com chave de ouro, vou propor um desafio. Você topa?
+A ideia aqui é adicionar informações na nossa tela de Finalizar. As informações do usuário logado na aplicação - por exemplo, o endereço - são muito importantes na finalização de uma compra. Aproveitando que já temos essa informação salva no nosso Context API de autenticação, propomos que você faça as configurações para que informação de endereço do usuário apareça na tela.
+
+Além disso, algo muito importante a se fazer é criar uma função para limpar os dados do nosso banco de dados (db.json) usando nossa Web API e somente depois retornar para a tela principal!
+
+Então, esses são os meus dois desafios para você:
+
+Exibir dados do usuário na tela de Finalizar;
+Criar uma função que limpe o db.json ao clicar no botão finalizar, e depois retornar para a tela principal.
+Com todos os conhecimentos aprendidos, você é mais do que capaz de solucionar esse desafio.
+
+Ao finalizar a atividade, poste o resultado no fórum. Vamos adorar ver como ficou sua aplicação! E se precisar de ajuda, apareça por lá também para que possamos te ajudar.
+
+Boa sorte!
+
+O objetivo desta atividade é testar todos os conhecimentos que você viu ao longo do curso, estimulando sua autonomia, criatividade e capacidade de solucionar problemas.
+Esse desafio pode ser resolvido das mais diversas maneiras e não necessariamente precisa ser idêntica a forma que eu fiz. Caso queira, compartilhe a sua versão com a gente lá no fórum, vai ser bem legal vermos como pensou em fazer esse desafio!
+
+Se quiser dar uma conferida na forma que foi implementada, dê uma olhadinha nesse repositório do Github.
+
+https://github.com/alura-cursos/react-native-context-api/tree/desafio
+
+@@10
+Projeto final do curso
+
+Chegamos ao final do nosso curso, e vou deixar para você o nosso projeto final. Você pode acessar o repositório completo no GitHub.
+
+https://github.com/alura-cursos/react-native-context-api/tree/projeto-final
+
+@@11
+O que aprendemos?
+
+Nesta aula, aprendemos que:
+O Context API por si só não persiste os dados, caso a aplicação seja reiniciada;
+A solução para persistir os dados consiste em dois métodos diferentes que aplicamos: o primeiro, usando o AsyncStorage para salvar a informação do tema da aplicação; o segundo, utilizando uma Web API para salvar os produtos da nossa lista do carrinho.
+Parabéns, você chegou ao fim do nosso curso. Tenho certeza que essa caminhada foi de muito aprendizado.
+
+E, então, o que você achou? Ficou alguma dúvida? Dá uma passadinha lá no fórum para que possamos te ajudar e para que você também possa interagir com outras pessoas.
+
+Deixe-nos seu feedback! É muito importante e só assim podemos melhorar nossos conteúdos para contribuir com o seu aprendizado. É super rápido e nos ajuda bastante!
+
+Até a próxima!
+
+@@12
+Conclusão
+
+Meus parabéns para vocês que chegaram até aqui!
+Finalizamos nosso curso e aprendemos o que é o Context API, além de quando e porque devemos utilizá-lo. Vimos que, graças ao Context API conseguimos acessar informações de variáveis e funções nas mais diversas telas e componentes, sem ter que transferir via props, tudo de forma global na aplicação.
+
+Conseguimos usar o Context na parte de autenticação e para adicionar itens na nossa lista de carrinho. Também aprendemos que, com o Context, conseguimos aplicar a alteração do tema escuro para o tema claro, mudando vários componentes e cores do nosso projeto.
+
+Descobrimos que, por si só, o Context API não salva as informações da aplicação caso ela reinicie, então aplicamos conceitos de cursos anteriores, como o Async Storage e Web API, para mantermos a persistência dos dados.
+
+Criamos também a tela de Finalizar através do desafio. Graças a ela, conseguimos finalizar e completar nosso e-commerce, finalizando uma compra com sucesso. Espero que este curso tenha sido útil para vocês e que as informações possam valer para usarem nos seus projetos futuros.
+
+Caso tenha sido útil e proveitoso, deixem um comentário ao final deste curso, isso é muito importante para nós. Aproveitem para compartilhar o que aprenderam e construíram no curso nas redes sociais e nos marquem, porque será muito legal ver.
+
+Caso não tenha sido útil, algo tenha ficado mal explicado ou vocês não gostaram de alguma coisa, também comentem ao final do curso para que possamos melhorar nos próximos cursos. Também podem comentar as dúvidas e dificuldades que tiveram no fórum, porque vamos responder e ficaremos muito felizes também.
+
+Obrigado por terem chegado até aqui e nos vemos no próximo curso.

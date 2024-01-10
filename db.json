@@ -1,0 +1,22 @@
+{
+  "produtos": [
+    {
+      "imagem": "/static/media/camisa.431d49cacba582bd1fd7.jpeg",
+      "texto": "Camisa bonita",
+      "preco": 80,
+      "id": 1
+    },
+    {
+      "imagem": "/static/media/cadeira.442aa3ff5528a98e4445.jpeg",
+      "texto": "Cadeira de trabalho",
+      "preco": 150,
+      "id": 2
+    },
+    {
+      "imagem": "/static/media/camisa.431d49cacba582bd1fd7.jpeg",
+      "texto": "Camisa bonita",
+      "preco": 80,
+      "id": 3
+    }
+  ]
+}
